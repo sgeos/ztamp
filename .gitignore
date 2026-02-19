@@ -1,0 +1,12 @@
+# Secrets and sensitive documents
+secret/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor artifacts
+*.swp
+*~
+.idea/
+.vscode/
