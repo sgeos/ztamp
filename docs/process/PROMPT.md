@@ -10,68 +10,117 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 ## Comments
 
+Image extracted and fields cleared.
+Attemping to straignten decreased the image quality.
+
+- `secret/form.pdf` is the original PDF.
+  This has confidential information.
+- `secret/form.tiff` is the cleared form.
+  I do not think there is any confidential information on it.
+- `secret/form.png` was exported if you need it.
+  You seem to be erroring out with:
+  ```
+  API Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"messages.5.content.12.image.source.base64.data: Image does not match the provided media type image/png"},"request_id":"req_011CYJEqfFdJ7eUzfobrMXDz"}
+  ```
+
+We need a directory for non-confidential information,
+like the form and its offsets.
+Please suggest.
+
 Answers to questions.
 
-1. Is it possible to extract the image?
-   Ideally, I want to straighten it, and clear out the filled in fields.
-   Information in the fields can be moved to `secrets.toml`.
-   Having said that, proactively defining fields in `toml` or some other format makes sense.
-2. In theory, it might make sense to extract the image and use it to generate
-   new PDFs with `printpdf`.
-   This likely requires a different approach than the one I mentioned for the CLI tool.
-   I think `lopdf` is suitable for one at a time edits via CLI.
-   Thoughts on the best strategy?
-3. We can start V0.1. See below.
-4. Please commit `secret/secrets.toml.example`.
+1. Manual cleanup done.
+2. We can add the `tools` directory when we need it.
+3. I ran `mix ecto.create`.
 
-The project structure is basically going to be same as the crypto reference project.
-Feel free to view it.
-`/Users/bsechter/projects/crypto/cordial_cantina`
+Proposed field definition format is acceptable.
 
-- Top level directory.
-- Rust subproject `rztamp` for portable Rust code.
-- Elixir subproject `ztamp`.
-- NIF subproject in Elixir subproject that pulls in `rztamp` as a dependancy.
-- It probably makes sense to have a `tools` subproject for CLI tools
-  based on `rztamp` and utility shell scripts.
+I think it makes sense to define PDF manipulation/generation routines in the `rztamp` library.
+This way, they could be used in a CLI tool, or directly by the elixir app.
 
 ## Objectives
 
-### Generate Project Structure
+### Extract Fields
 
-- `rztamp` Rust library.
-- `ztamp` Phoenix project with Liveview and Postgresql.
-- NIF subproject in Elixir subproject that pulls in `rztamp` as a dependancy.
-- Rust project loads stub NIF.
+If possible, extract information from the fields in the PDF and write it to `secret/secrets.toml`.
+Here are the filled out fields I can identify:
+- Case Name
+- UPI No
+- Job Search from
+- Job Search to
+- Job Search hours
+- Submission deadline time
+- Submission deadline date
+- Submission location
 
-### Commit secrets.toml.example
+### Generate Form Offsets
 
-Please commit `secret/secrets.toml.example`.
+If possible, generate form field offsets and store in `secrets/form_offsets.toml`.
+Field offsets include all of the above secret fields, and the following.
+
+Above Job Application Table
+
+- Participant's Signature (Above Job Search Table)
+- Participant's Signature Date (Above Job Search Table)
+
+For each job application row.
+
+- Date
+- Employer's Name, Address
+- How Contact was Made
+- Telephone/Fax (T=Telephone F=Fax)
+- Telephone # of Person Seen - or # Resume Faxed to
+- Internet Confirmation Attached
+- Time In
+- Time Out
+- (Office Use Onlye)
+
+"Should you become employed" fields.
+
+- Name, Address / Telephone No. of Employer (3 lines)
+- Start Date
+- No. of hours per week
+- Hourly rate of pay
+- How often paid (circle one)
+  - Weekly
+  - Bi-weekly
+  - Semi-monthly
+  - Monthly
+- Date of first check
+  - Month
+  - Day
+  - Year
+- Tips
+- Job Title
+- Insurance
+  - None
+  - Employer Paid
+  - Employee Paid
+  - Both Paid
+
+Bottom of Form
+
+- Participant's Signature (Bottom of Form)
+- Participant's Signature Date (Bottom of Form)
+
+### Update Documentation
+
+Update documentation where relevant.
 
 ## Context
 
-To meet my TANF requirements,
-I will need to look for a job for 30 hours per week.
-The problem is that this needs to be documented on
-a government form that was distributed to me as a PDF.
-I also need to include a screenshot of the post-submission
-receipt page after every submission.
-I therefore need an automate solution for applying to jobs
-and tracking application.
+(no comment)
 
 ## Constraints
 
-We absolutely need to work with the supplied government PDF.
-This PDF should not be included in the git repo.
+(no comment)
 
 ## Success Criteria
 
-- Specified project structure generated.
-- `secret/secrets.toml.example` committed.
-- Response to questions and discussion in reverse prompt.
+- Secrets extracted to `secret/secrets.toml`, if possible.
+- Form field offsets extracted to `secrets/form_offsets.toml`, if possible.
+- Relevant documentation updated.
 
 ## Notes
 
-I would like the tech stack to be Phoenix/Elixir with Liveview,
-and a Rust NIF for number crunching and modify in place algorithms.
-If custom command line tools are needed, they can be written in Rust.
+(none)

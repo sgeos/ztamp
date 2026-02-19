@@ -29,6 +29,10 @@ tanf/                          # Git repository root
 │   └── native/nif/            # Rust NIF bridge (depends on rztamp)
 │       ├── Cargo.toml
 │       └── src/lib.rs
+├── assets/                    # Non-confidential project assets (tracked)
+│   └── form/                  # Form template and field definitions
+│       ├── template.tiff      # Cleaned form image (base layer for PDF generation)
+│       └── form_offsets.toml  # Field positions in mm from top-left
 ├── secret/                    # Sensitive files (gitignored, .gitkeep tracked)
 └── docs/                      # Documentation knowledge graph
     ├── README.md              # Documentation root

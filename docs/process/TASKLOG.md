@@ -8,38 +8,33 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: Project Structure Generation (V0.1-M1-P1)
+**Name**: Field Extraction and Form Offsets (V0.1-M1-P2)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
-- [x] Generate `rztamp` Rust library.
-- [x] Generate `ztamp` Phoenix project with LiveView and PostgreSQL.
-- [x] Add NIF subproject in `ztamp` that depends on `rztamp`.
-- [x] Verify stub NIF loads and calls through to `rztamp`.
-- [x] Commit `secret/secrets.toml.example`.
-- [x] Respond to PDF strategy questions in reverse prompt.
+- [x] Extract field values from the original PDF to `secret/secrets.toml`.
+- [x] Generate form field offsets and store in `assets/form/form_offsets.toml`.
+- [x] Update relevant documentation.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.1-M1-P1-T1 | Generate rztamp Rust library | Complete | `cargo test` passes. `alive()` returns `true`. |
-| V0.1-M1-P1-T2 | Generate ztamp Phoenix project | Complete | `mix phx.new ztamp --database postgres --live`, `mix deps.get` successful. |
-| V0.1-M1-P1-T3 | Add Rustler dependency to ztamp | Complete | `{:rustler, "~> 0.34"}` added to mix.exs. Resolves to 0.37.3. |
-| V0.1-M1-P1-T4 | Create NIF bridge (native/nif/) | Complete | Cargo.toml depends on rztamp via `path = "../../../rztamp"`. `rustler = "0.37"`. |
-| V0.1-M1-P1-T5 | Create Elixir NIF wrapper | Complete | `lib/ztamp/nif.ex` with `nop/0` and `alive/0`. `mix compile` successful. |
-| V0.1-M1-P1-T6 | Verify NIF end-to-end | Complete | `Ztamp.Nif.nop()` returns `:ok`. `Ztamp.Nif.alive()` returns `true`. |
-| V0.1-M1-P1-T7 | Populate secrets.toml.example | Complete | Template with participant and form sections. |
-| V0.1-M1-P1-T8 | Update CLAUDE.md structure diagram | Complete | Repository structure updated with rztamp/, ztamp/, native/nif/. |
-| V0.1-M1-P1-T9 | Update process files and commit | Complete | TASKLOG.md, REVERSE_PROMPT.md overwritten. Committed on feature branch. |
+| V0.1-M1-P2-T1 | Create non-confidential assets directory | Complete | `assets/form/` created with `template.tiff` copied from `secret/form.tiff`. |
+| V0.1-M1-P2-T2 | Extract field values from PDF | Complete | 8 fields extracted to `secret/secrets.toml`. Values verified against PDF visual inspection. |
+| V0.1-M1-P2-T3 | Update secrets.toml.example | Complete | Template expanded with `[job_search]` and `[submission]` sections. |
+| V0.1-M1-P2-T4 | Generate form field offsets | Complete | 40+ field positions in `assets/form/form_offsets.toml`. Coordinates in mm from top-left. |
+| V0.1-M1-P2-T5 | Update CLAUDE.md structure diagram | Complete | `assets/form/` added to repository structure. |
+| V0.1-M1-P2-T6 | Update process files and commit | Complete | TASKLOG.md, REVERSE_PROMPT.md updated. |
 
 ## Notes
 
-- This is the first prompt in V0.1 (Project Structure). V0.0 (Process Definition) is complete.
-- The `tools` subproject for CLI tools was mentioned in the prompt comments but was not listed as an objective. It can be added in a future prompt.
-- Rust edition 2024 used for both rztamp and the NIF crate.
+- The prompt specified `secrets/form_offsets.toml` (with trailing 's') but the project uses `secret/` (no trailing 's'). Since form offsets are not confidential, they were placed in `assets/form/form_offsets.toml` per the prompt comments requesting a non-confidential directory.
+- Field offset coordinates are initial estimates from visual inspection. They require calibration during V0.2 (PDF Write PoC).
+- The `secret/form.png` file caused API errors due to media type mismatch (noted in prompt comments). The TIFF version was used as the canonical template.
+- PDF manipulation routines will be defined in the `rztamp` library as noted in the prompt comments.
 
 ## History
 
@@ -47,3 +42,4 @@ Current task state and verification log. This file is the shared source of truth
 |------|--------|
 | 2026-02-19 | V0.0: Process definition, knowledge graph, PDF analysis, roadmap, decision resolution. |
 | 2026-02-19 | V0.1-M1-P1: Project structure generated. rztamp Rust library, ztamp Phoenix project, NIF bridge with Rustler, secrets.toml.example. |
+| 2026-02-19 | V0.1-M1-P2: Field extraction and form offsets. secrets.toml populated, form_offsets.toml created in assets/form/, documentation updated. |

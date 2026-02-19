@@ -1,0 +1,275 @@
+# Form Field Offsets for TANF Individual Job Search and Agreement
+#
+# Coordinate system: millimeters from the top-left corner of the page.
+# Page size: US Letter (215.9mm x 279.4mm).
+# Template image: assets/form/template.tiff (1704x2200 pixels, ~200 DPI).
+#
+# IMPORTANT: These offsets are initial estimates derived from visual inspection
+# of the scanned form. They require calibration against the template image
+# during PDF generation implementation (V0.2).
+#
+# Conversion from pixels to mm: pixel * (25.4 / 200) = mm
+# Conversion from mm to PDF points: mm * (72 / 25.4) = points
+
+[meta]
+page_width_mm = 215.9
+page_height_mm = 279.4
+template_image = "assets/form/template.tiff"
+template_width_px = 1704
+template_height_px = 2200
+template_dpi = 200
+
+# --- Header Fields (secret values from secrets.toml) ---
+
+[fields.case_name]
+x = 33.0
+y = 29.2
+width = 70.0
+font_size = 10
+
+[fields.upi_number]
+x = 107.0
+y = 29.2
+width = 40.0
+font_size = 10
+
+[fields.job_search_from]
+x = 91.0
+y = 40.6
+width = 25.0
+font_size = 10
+
+[fields.job_search_to]
+x = 120.0
+y = 40.6
+width = 25.0
+font_size = 10
+
+[fields.job_search_hours]
+x = 148.0
+y = 40.6
+width = 15.0
+font_size = 10
+
+[fields.submission_deadline_time]
+x = 89.0
+y = 44.5
+width = 20.0
+font_size = 10
+
+[fields.submission_deadline_date]
+x = 115.0
+y = 44.5
+width = 25.0
+font_size = 10
+
+[fields.submission_location]
+x = 143.0
+y = 44.5
+width = 30.0
+font_size = 10
+
+# --- Participant's Signature (Above Job Search Table) ---
+
+[fields.participant_signature_top]
+x = 30.0
+y = 72.0
+width = 80.0
+font_size = 10
+
+[fields.participant_signature_top_date]
+x = 120.0
+y = 72.0
+width = 30.0
+font_size = 10
+
+# --- Job Application Table ---
+#
+# The table has 10 data rows (plus an example row).
+# Row numbering: 1-10.
+# Column x positions are the left edges of each column's data area.
+# Row y positions are calculated as: table_first_row_y + (row - 1) * row_height.
+
+[table]
+first_row_y = 111.0
+row_height = 6.0
+row_count = 10
+
+[table.columns.date]
+x = 12.0
+width = 20.0
+font_size = 9
+
+[table.columns.employer_name_address]
+x = 42.0
+width = 68.0
+font_size = 9
+
+[table.columns.how_contact_made]
+x = 112.0
+width = 18.0
+font_size = 9
+
+[table.columns.telephone_fax]
+x = 132.0
+width = 16.0
+font_size = 9
+
+[table.columns.telephone_number]
+x = 150.0
+width = 28.0
+font_size = 8
+
+[table.columns.internet_confirmation]
+x = 180.0
+width = 14.0
+font_size = 9
+
+[table.columns.time_in]
+x = 196.0
+width = 10.0
+font_size = 9
+
+[table.columns.time_out]
+x = 207.0
+width = 10.0
+font_size = 9
+
+[table.columns.office_use_only]
+x = 218.0
+width = 0.0
+font_size = 9
+# Note: Office Use Only column is at the right edge. Not populated by the applicant.
+
+# --- "Should you become employed" Section ---
+
+[fields.employed_name_address_line1]
+x = 12.0
+y = 177.0
+width = 80.0
+font_size = 9
+
+[fields.employed_name_address_line2]
+x = 12.0
+y = 182.0
+width = 80.0
+font_size = 9
+
+[fields.employed_name_address_line3]
+x = 12.0
+y = 187.0
+width = 80.0
+font_size = 9
+
+[fields.employed_telephone]
+x = 12.0
+y = 192.0
+width = 80.0
+font_size = 9
+
+[fields.employed_start_date]
+x = 108.0
+y = 177.0
+width = 25.0
+font_size = 9
+
+[fields.employed_hours_per_week]
+x = 150.0
+y = 177.0
+width = 20.0
+font_size = 9
+
+[fields.employed_hourly_rate]
+x = 185.0
+y = 177.0
+width = 20.0
+font_size = 9
+
+# How often paid: one of "Weekly", "Bi-weekly", "Semi-monthly", "Monthly".
+# These are circle-one options. The x,y positions mark the center of each option.
+[fields.employed_pay_frequency_weekly]
+x = 118.0
+y = 182.0
+font_size = 9
+
+[fields.employed_pay_frequency_biweekly]
+x = 135.0
+y = 182.0
+font_size = 9
+
+[fields.employed_pay_frequency_semimonthly]
+x = 156.0
+y = 182.0
+font_size = 9
+
+[fields.employed_pay_frequency_monthly]
+x = 180.0
+y = 182.0
+font_size = 9
+
+# Date of first check: three fields (month / day / year).
+[fields.employed_first_check_month]
+x = 118.0
+y = 187.0
+width = 10.0
+font_size = 9
+
+[fields.employed_first_check_day]
+x = 130.0
+y = 187.0
+width = 10.0
+font_size = 9
+
+[fields.employed_first_check_year]
+x = 142.0
+y = 187.0
+width = 10.0
+font_size = 9
+
+[fields.employed_tips]
+x = 155.0
+y = 187.0
+width = 15.0
+font_size = 9
+
+[fields.employed_job_title]
+x = 178.0
+y = 187.0
+width = 30.0
+font_size = 9
+
+# Insurance: one of "None", "Employer Paid", "Employee Paid", "Both Paid".
+# Circle-one options.
+[fields.employed_insurance_none]
+x = 118.0
+y = 192.0
+font_size = 9
+
+[fields.employed_insurance_employer_paid]
+x = 138.0
+y = 192.0
+font_size = 9
+
+[fields.employed_insurance_employee_paid]
+x = 162.0
+y = 192.0
+font_size = 9
+
+[fields.employed_insurance_both_paid]
+x = 186.0
+y = 192.0
+font_size = 9
+
+# --- Participant's Signature (Bottom of Form) ---
+
+[fields.participant_signature_bottom]
+x = 30.0
+y = 234.0
+width = 80.0
+font_size = 10
+
+[fields.participant_signature_bottom_date]
+x = 130.0
+y = 234.0
+width = 30.0
+font_size = 10

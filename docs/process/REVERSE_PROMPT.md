@@ -9,113 +9,80 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.1-M1-P1 Project Structure Generation
+**Task**: V0.1-M1-P2 Field Extraction and Form Offsets
 
 ---
 
 ## Verification
 
-### rztamp Rust Library
+### Field Extraction (secret/secrets.toml)
 
-Created at `rztamp/` with `edition = "2024"`. Exposes a single `alive()` function that returns `true`. Unit test passes via `cargo test`.
+Eight field values were extracted from the original PDF by visual inspection.
 
-### ztamp Phoenix Project
+| Field | Value |
+|-------|-------|
+| Case Name | BRENDAN SECHTER |
+| UPI Number | 58036400 |
+| Job Search From | 03/16/2026 |
+| Job Search To | 03/22/2026 |
+| Job Search Hours | 30 |
+| Submission Deadline Time | 05:00 pm |
+| Submission Deadline Date | 04/01/2026 |
+| Submission Location | Belrose |
 
-Generated with `mix phx.new ztamp --database postgres --live`. Dependencies fetched successfully. Phoenix 1.8.3, LiveView 1.1.24, Ecto 3.13.5, Postgrex 0.22.0.
+The `secrets.toml.example` template was expanded to include `[job_search]` and `[submission]` sections matching the populated `secrets.toml`.
 
-### NIF Bridge
+### Non-Confidential Assets Directory (assets/form/)
 
-| Component | Path | Details |
-|-----------|------|---------|
-| Rust NIF crate | `ztamp/native/nif/` | `rustler = "0.37"`, depends on `rztamp` via relative path |
-| Elixir wrapper | `ztamp/lib/ztamp/nif.ex` | `use Rustler, otp_app: :ztamp, crate: "nif"` |
-| Compiled artifact | `ztamp/priv/native/nif.so` | Compiled in release mode |
+Created `assets/form/` to hold non-confidential form-related files, per the prompt comments requesting a directory for data such as the form template and field offsets.
 
-End-to-end verification:
+| File | Description |
+|------|-------------|
+| `assets/form/template.tiff` | Cleaned form image (copied from `secret/form.tiff`). Base layer for PDF generation. |
+| `assets/form/form_offsets.toml` | Field positions for all form fields. |
 
-```
-mix run -e "IO.inspect(Ztamp.Nif.nop()); IO.inspect(Ztamp.Nif.alive())"
-:ok
-true
-```
+### Form Field Offsets (assets/form/form_offsets.toml)
 
-Both NIF functions load and execute correctly. `alive/0` calls through to `rztamp::alive()`, confirming the Rust library is linked.
+Field offsets were generated for all fields listed in the prompt objectives. The coordinate system uses millimeters from the top-left corner of the page (US Letter, 215.9mm x 279.4mm). Fields covered include the following.
 
-### secrets.toml.example
+**Header fields**: case_name, upi_number, job_search_from, job_search_to, job_search_hours, submission_deadline_time, submission_deadline_date, submission_location.
 
-Populated with `[participant]` (case_name, upi_number) and `[form]` (base_form_path) sections. Committed from `secret/`.
+**Signature fields (above table)**: participant_signature_top, participant_signature_top_date.
+
+**Job application table**: 10 rows with 9 columns (date, employer_name_address, how_contact_made, telephone_fax, telephone_number, internet_confirmation, time_in, time_out, office_use_only). Row positions are computed from `first_row_y` and `row_height` parameters.
+
+**"Should you become employed" section**: employer name/address/telephone (3 lines plus telephone), start_date, hours_per_week, hourly_rate, pay frequency options (weekly, biweekly, semimonthly, monthly), date of first check (month/day/year), tips, job_title, insurance options (none, employer_paid, employee_paid, both_paid).
+
+**Signature fields (bottom of form)**: participant_signature_bottom, participant_signature_bottom_date.
+
+All coordinates are initial estimates derived from visual inspection. They require calibration against the template image during V0.2 (PDF Write PoC).
 
 ### CLAUDE.md Updated
 
-Repository structure diagram updated to include `rztamp/`, `ztamp/`, and `native/nif/`. Status updated to V0.1.
+Repository structure diagram updated to include `assets/form/` with `template.tiff` and `form_offsets.toml`.
 
 ---
 
-## PDF Strategy Discussion
+## Path Discrepancy Note
 
-The prompt raised two related questions about PDF handling strategy. These are addressed below.
-
-### Image Extraction and Cleanup
-
-The idea of extracting the scanned image from the PDF, straightening it, and clearing filled fields is sound in principle. The PDF contains a single CCITT Group 4 encoded bitmap at 1704x2200 pixels (approximately 200 DPI for US Letter). Extracting this image is straightforward with `lopdf` (read the image stream object and decode it) or even a CLI tool like `pdfimages`.
-
-However, "clearing filled fields" on a scanned image is an image processing problem, not a PDF problem. The handwritten example entries are baked into the pixel data. Removing them would require either manual image editing (recommended for a one-time cleanup) or heuristic image processing (fragile and likely overkill for a single form template).
-
-**Recommended approach**: Extract the image once, straighten and clean it manually in an image editor (GIMP or similar), and save the cleaned image as the canonical template. This cleaned image becomes the base layer for all generated forms.
-
-### printpdf versus lopdf for PDF Generation
-
-The two crates serve different purposes and are not mutually exclusive.
-
-**`printpdf`** creates new PDF documents from scratch. It provides a high-level API for placing text, images, and vector graphics onto pages. If the strategy is to extract the cleaned form image and then generate fresh PDFs with the image as a background layer and field data overlaid as native PDF text, `printpdf` is the better choice. This approach produces clean, searchable PDFs where the text is actual text (not pixel data).
-
-**`lopdf`** manipulates existing PDF structure at the object level. It is suitable for modifying an existing PDF in place, for example appending content streams to an existing page. It is lower-level and requires manual construction of PDF content stream operators for text placement.
-
-**Recommendation**: Use `printpdf` for the primary workflow. The strategy would be:
-
-1. Extract and clean the form image once (manual step).
-2. At generation time, create a new PDF with `printpdf`.
-3. Place the cleaned form image as the page background.
-4. Overlay field data as native PDF text at known coordinates.
-5. The result is a clean PDF with selectable text.
-
-Reserve `lopdf` for any future need to manipulate existing PDF files (for example, concatenating filled forms with screenshot PDFs in V0.3).
-
-### Field Definition Format
-
-Defining field positions in TOML is a good approach. A structure like the following would map logical field names to page coordinates.
-
-```toml
-[fields.employer_name_1]
-x = 85
-y = 420
-width = 200
-font_size = 10
-
-[fields.date_1]
-x = 290
-y = 420
-width = 60
-font_size = 10
-```
-
-The coordinate system would need to be calibrated against the cleaned template image. This work belongs in V0.2 (PDF Write PoC).
+The prompt specified `secrets/form_offsets.toml` (with trailing 's'). The project convention uses `secret/` (without trailing 's'). Since form offsets describe a government form layout and are not confidential, they were placed in `assets/form/form_offsets.toml` instead. This follows the prompt comments that requested a non-confidential directory for the form and its offsets.
 
 ---
 
 ## Questions for Human Review
 
-1. **Image cleanup method.** Should the form image extraction and cleanup be done manually (one-time task in an image editor), or should the project include automated image processing for this step?
+1. **Form offsets location.** The offsets were placed in `assets/form/form_offsets.toml` rather than `secret/form_offsets.toml`. Is this acceptable, or should they be moved to the `secret/` directory?
 
-2. **Tools subproject.** The prompt mentioned that "it probably makes sense to have a `tools` subproject for CLI tools based on `rztamp` and utility shell scripts." This was not listed as an explicit objective for this prompt. Should a `tools/` directory be scaffolded in a future prompt, or should CLI tools live directly in `rztamp` as binary targets?
+2. **Offset coordinate system.** Coordinates are in millimeters from the top-left corner. This maps naturally to how `printpdf` can work and to visual inspection of the template image. Is this coordinate system acceptable for V0.2, or would PDF points (origin at bottom-left) be preferred?
 
-3. **Database setup.** The Phoenix project was generated with PostgreSQL support but `mix ecto.create` was not run (it requires a running PostgreSQL instance). Should database setup be deferred to a later prompt, or should it be verified now?
+3. **Offset calibration.** The current offsets are estimates. During V0.2, they will need calibration by generating a test PDF and comparing the output against the template. Should the calibration be done interactively (generate, inspect, adjust) or should a programmatic approach be explored (for example, placing markers at known positions)?
+
+4. **PDF library for rztamp.** The previous reverse prompt recommended `printpdf` for PDF generation. The prompt comments confirmed that PDF manipulation routines should be defined in the `rztamp` library. Should `printpdf` be added as a dependency to `rztamp` now, or deferred to the V0.2 prompt?
 
 ---
 
 ## Notes
 
-- The `tools` subproject was not created in this prompt. It was mentioned in comments but not in the objectives.
-- The Phoenix project includes the default generated code (home page, error views, etc.). Customization of the web interface is expected in later phases.
-- Rust edition 2024 was used for both `rztamp` and the NIF crate, matching the edition specified in `rztamp/Cargo.toml`.
-- The NIF adds an `alive/0` function beyond the reference project's `nop/0` stub, providing a direct verification path from Elixir through to `rztamp`.
+- The `secret/form.png` file causes API errors due to a media type mismatch (the file metadata claims PNG but the content may not match). The TIFF version works correctly and was used as the canonical template.
+- The form image is rotated 90 degrees counter-clockwise when viewed as a raw image. The PDF renderer corrects this orientation. The template.tiff retains the original orientation from the PDF.
+- The example row in the job search table (showing "Made-Up Company" etc.) is part of the printed form, not filled-in data. It is visible in the template image and does not need to be cleared.
