@@ -20,12 +20,13 @@ TANF Job Search Automation tool. Automates job search documentation for Temporar
 tanf/                          # Git repository root
 ├── CLAUDE.md                  # AI agent instructions
 ├── .gitignore                 # Excludes secret/ and editor artifacts
-├── secret/                    # Sensitive files (gitignored)
+├── secret/                    # Sensitive files (gitignored, .gitkeep tracked)
 └── docs/                      # Documentation knowledge graph
     ├── README.md              # Documentation root
     ├── DOCUMENTATION_STRATEGY.md
     ├── overview/              # Product identity and context
     ├── architecture/          # Technology stack and design
+    ├── decisions/             # Architectural and design decisions
     ├── process/               # Workflow and communication
     └── reference/             # Glossary and reference material
 ```
@@ -38,12 +39,15 @@ A knowledge graph is maintained in `docs/`. Start at [`docs/README.md`](docs/REA
 |---------|------|-------------|
 | Overview | [`docs/overview/`](docs/overview/README.md) | Product identity and project context |
 | Architecture | [`docs/architecture/`](docs/architecture/README.md) | Technology stack and system design |
+| Decisions | [`docs/decisions/`](docs/decisions/README.md) | Architectural and design decisions |
 | Process | [`docs/process/`](docs/process/README.md) | Development workflow, communication, and task tracking |
 | Reference | [`docs/reference/`](docs/reference/README.md) | Glossary and supplementary reference material |
 
-## Commit Convention
+## Git Workflow
 
-Use scoped conventional commits: `<scope>: <imperative summary>`. Common scopes: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`. Include `Co-Authored-By: Claude <noreply@anthropic.com>` when AI-assisted. See [`docs/process/GIT_STRATEGY.md`](docs/process/GIT_STRATEGY.md) for full details.
+Trunk-based development with short-lived feature branches. All changes arrive on `main` via feature branch merge with rebase. See [`docs/process/GIT_STRATEGY.md`](docs/process/GIT_STRATEGY.md) for full details.
+
+Use scoped conventional commits: `<scope>: <imperative summary>`. Common scopes: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`. Include `Co-Authored-By: Claude <noreply@anthropic.com>` when AI-assisted.
 
 The AI agent commits once after all tasks in a prompt are complete, including the `REVERSE_PROMPT.md` update. `PROMPT.md` is read-only for the AI agent but must be included in the commit if the human pilot has modified it.
 

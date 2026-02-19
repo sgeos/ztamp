@@ -29,3 +29,4 @@ Development process, communication protocol, and task tracking.
 
 - [Overview](../overview/README.md) for project context
 - [Architecture](../architecture/README.md) for technical design
+- [Decisions](../decisions/README.md) for blocking and resolved decisions

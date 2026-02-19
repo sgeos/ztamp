@@ -8,38 +8,40 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: Establish Process and Knowledge Graph (P1)
+**Name**: Refine Process and Add Decision Tracking (V0.0-M1-P2)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
-- [x] Knowledge graph for project drafted.
-- [x] Process documented in knowledge graph.
-- [x] `secret` folder added to `.gitignore`.
-- [x] Questions, comments, and concerns documented in `REVERSE_PROMPT.md`.
-- [x] `TASKLOG.md` added and updated.
-- [x] Changes committed with appropriate commit message.
+- [x] Document use of `Vw-Mx-Py-Tz` coding.
+- [x] Document use of trunk-based development with feature branches.
+- [x] Add files to track blockers and decisions to the knowledge graph.
+- [x] Document PDF manipulation, screenshot capture, and browser automation as blocking decisions.
+- [x] Include recommendations for blocker resolutions in REVERSE_PROMPT.md.
+- [x] Add `.gitkeep` to the `secret` folder.
+- [x] Whitelist `*.example` files in `.gitignore`.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| P1-T1 | Explore reference projects for process conventions | Complete | Blog and crypto project knowledge graphs walked. Blog weighted more heavily. |
-| P1-T2 | Draft knowledge graph and documentation structure | Complete | 14 documentation files created across 4 sections. Navigation links verified. |
-| P1-T3 | Add process files (COMMUNICATION, GIT_STRATEGY, TASKLOG, REVERSE_PROMPT) | Complete | All process documents created following reference project conventions. |
-| P1-T4 | Add `secret/` to `.gitignore` | Complete | `.gitignore` updated with `secret/` and standard editor/OS exclusions. |
-| P1-T5 | Create CLAUDE.md | Complete | Project-level AI agent instructions created with session startup protocol. |
-| P1-T6 | Update REVERSE_PROMPT.md and commit | Complete | REVERSE_PROMPT.md overwritten. Single commit with all changes. |
+| V0.0-M1-P2-T1 | Adopt Vw-Mx-Py-Tz coding system | Complete | COMMUNICATION.md updated with full coding system. GIT_STRATEGY.md task references updated. |
+| V0.0-M1-P2-T2 | Adopt trunk-based development with feature branches | Complete | GIT_STRATEGY.md rewritten with feature branch naming, linear history, and rebase workflow. |
+| V0.0-M1-P2-T3 | Add decision tracking files | Complete | decisions/ directory created with README.md, RESOLVED.md, PRIORITY.md, BACKLOG.md. |
+| V0.0-M1-P2-T4 | Document blocking decisions (D1-D3) | Complete | PDF form population, screenshot capture, and browser automation documented in PRIORITY.md with research-backed recommendations. |
+| V0.0-M1-P2-T5 | Add .gitkeep and whitelist *.example | Complete | secret/.gitkeep created. .gitignore uses secret/* pattern with negations for .gitkeep and *.example. |
+| V0.0-M1-P2-T6 | Update process files and commit | Complete | TASKLOG.md, REVERSE_PROMPT.md overwritten. Feature branch commit with all changes. |
 
 ## Notes
 
-- Work item coding uses Px-Ty format (Prompt-Task) adapted from the blog project Ax-Py-Tz system. The article dimension was removed because this is not a blog.
-- The crypto project uses Vw-Mx-Py-Tz. This was considered but deemed unnecessarily complex for the current project scope.
-- PROMPT.md was authored by the human pilot and is committed as-is per the communication protocol.
+- Work item coding upgraded from Px-Ty to Vw-Mx-Py-Tz per human direction.
+- P1 retroactively maps to V0.0-M1-P1.
+- Three blocking decisions (D1-D3) documented in decisions/PRIORITY.md with library research and recommendations.
 
 ## History
 
 | Date | Change |
 |------|--------|
-| 2026-02-19 | P1: Knowledge graph, process documentation, CLAUDE.md, git strategy, communication protocol, and .gitignore established. |
+| 2026-02-19 | V0.0-M1-P1: Knowledge graph, process documentation, CLAUDE.md, git strategy, communication protocol, and .gitignore established. |
+| 2026-02-19 | V0.0-M1-P2: Process refined. Vw-Mx-Py-Tz coding adopted. Trunk-based development adopted. Decision tracking added with D1-D3 blocking decisions. .gitkeep and *.example whitelist added. |

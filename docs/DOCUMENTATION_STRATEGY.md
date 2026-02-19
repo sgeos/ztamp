@@ -36,6 +36,11 @@ docs/
 ├── architecture/
 │   ├── README.md
 │   └── TECHNOLOGY_STACK.md
+├── decisions/
+│   ├── README.md
+│   ├── RESOLVED.md
+│   ├── PRIORITY.md
+│   └── BACKLOG.md
 ├── process/
 │   ├── README.md
 │   ├── COMMUNICATION.md
@@ -74,3 +79,4 @@ docs/
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-02-19 | Claude | Initial creation. Adapted from reference projects. |
+| 2026-02-19 | Claude | Added decisions/ section to directory structure. |

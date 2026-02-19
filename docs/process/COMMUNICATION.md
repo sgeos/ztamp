@@ -83,29 +83,38 @@ The History table should be periodically streamlined to minimize token consumpti
 
 ## Work Item Coding System
 
-All work items use the **Px-Ty** coding system for traceability across prompts and tasks.
+All work items use the **Vw-Mx-Py-Tz** coding system for traceability across versions, milestones, prompts, and tasks.
 
 ### Format
 
-`Px-Ty`
+`Vw-Mx-Py-Tz`
 
 | Component | Meaning | Example |
 |-----------|---------|---------|
-| Px | Prompt number | P1 = first prompt |
-| Ty | Task within prompt | T2 = second task |
+| Vw | Version (Phase) | V0.0 = Phase 0, V0.1 = Phase 1 |
+| Mx | Milestone within version | M1 = first milestone |
+| Py | Prompt within milestone | P3 = third prompt |
+| Tz | Task within prompt | T2 = second task |
 
-The prompt number is a monotonically increasing identifier. It does not reset.
+### Version Mapping
+
+| Phase | Version | Description |
+|-------|---------|-------------|
+| Phase 0 | V0.0 | Process definition and project setup |
+
+Additional phases and versions will be defined as the project roadmap develops.
 
 ### Usage
 
-- **TASKLOG.md**: Tasks use Px-Ty codes in the ID column.
-- **Git commits**: Reference task codes in the commit body using `[Task: Px-Ty]`.
+- **TASKLOG.md**: Tasks use Vw-Mx-Py-Tz codes in the ID column.
+- **Git commits**: Reference task codes in the commit body using `[Task: Vw-Mx-Py-Tz]`.
+- **Decisions**: Decision IDs in `decisions/` reference the version and milestone where they are relevant.
 
 ### Examples
 
-- `P1-T2` = Prompt 1, Task 2
-- `P3` = Prompt 3 (no specific task)
-- `P2-T1` = Prompt 2, Task 1
+- `V0.0-M1-P2-T1` = Phase 0, Milestone 1, Prompt 2, Task 1
+- `V0.0-M1-P1` = Phase 0, Milestone 1, Prompt 1 (no specific task)
+- `V0.1-M1-P3-T2` = Phase 1 (when defined), Milestone 1, Prompt 3, Task 2
 
 ## Task Completion Protocol
 

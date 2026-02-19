@@ -11,6 +11,7 @@ Documentation knowledge graph for the TANF Job Search Automation project.
 | [Overview](./overview/README.md) | Product identity and project context |
 | [Architecture](./architecture/README.md) | Technology stack and system design |
 | [Process](./process/README.md) | Development workflow, communication protocol, and task tracking |
+| [Decisions](./decisions/README.md) | Architectural and design decisions |
 | [Reference](./reference/README.md) | Glossary and supplementary reference material |
 
 ## Meta

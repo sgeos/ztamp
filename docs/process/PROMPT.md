@@ -10,41 +10,49 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 ## Comments
 
-Our first goal is to establish our workflow process.
+We will now refine the process.
+
+Answers to questions.
+
+1. Use `Vw-Mx-Py-Tz` coding.
+2. Use trunk-based development with feature branches following the crypto convention.
+3. The crypto project has files for documenting and resolving blockers.
+   We need that process for this project.
+4. `.gitkeep` is a good idea.
 
 ## Objectives
 
-Review the following projects to meet the objectives:
+### Adopt Coding
 
-- `/Users/bsechter/projects/blog`
+Adopt task coding structure from the crypto project.
+I think it is `Vw-Mx-Py-Tz`.
+
 - `/Users/bsechter/projects/crypto/cordial_cantina`
 
-The blog project is newer,
-and it's process was pulled in from the crypto project.
+Update the knowledge graph.
 
-### Replicate Reference Project Process
+### Adopt Trunk Based Development
 
-For each project,
-walk the knowledge graph
-and replicate the process for this project.
-Weight to blog more heavily.
+Use trunk-based development with feature branches following the crypto convention.
+Document this in the knowledge graph.
 
-#### Add and Update Process Files
+### Adopt Trunk Based Development
 
-Add the following files,
-and update them according to the process.
+The crypto project has files for documenting and resolving blockers.
+We need that process for this project.
+Document PDF manipulation, screenshot capture, and browser automation as blocking decisions.
+Include recommendations in your next reverse prompt.
+Feel free to research options.
 
-- `docs/process/REVERSE_PROMPT.md`
-- `docs/process/TASKLOG.md`
+### Add .gitkeep to Secret Folder
 
-### Add Knowledge Graph
+Add `.gitkeep` to the `secret` folder.
 
-Draft a walkable knowledge graph for this project.
-You may do research if necessary.
+### Whitelist Example Files
 
-### Add Secret Folder to .gitignore
-
-Add the `secret` folder to `.gitignore`.
+Whitelist `*.example` files in `.gitignore`.
+This will allow `.example` files the `secret` folder to show up in the repo.
+It will also allow the `*.example` files to document needed settings.
 
 ## Context
 
@@ -64,14 +72,14 @@ This PDF should not be included in the git repo.
 
 ## Success Criteria
 
-- Knowledge graph for project drafted.
-- Process documented in knowledge graph.
-- `secret` folder added to `.gitignore`.
-- Questions, comments, and concerns documented in:
-  `docs/process/REVERSE_PROMPT.md`
-- `docs/process/TASKLOG.md` added and updated.
-- Commit changes according to the process,
-  with an appropriate commit message.
+- Document use of `Vw-Mx-Py-Tz` coding.
+- Document use of trunk-based development with feature branches following the crypto convention.
+- Add files to track blockers and decisions to the knowledge graph.
+  Add these blockers to those files:
+  PDF manipulation, screenshot capture, and browser automation
+- Include recommendations for blocker resolutions in your next reverse prompt.
+- Add `.gitkeep` to the `secret` folder.
+- Whitelist `*.example` files in `.gitignore`.
 
 ## Notes
 

@@ -9,80 +9,70 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: P1 Establish Process and Knowledge Graph
+**Task**: V0.0-M1-P2 Refine Process and Add Decision Tracking
 
 ---
 
 ## Verification
 
-### Knowledge Graph Drafted
+### Vw-Mx-Py-Tz Coding Adopted
 
-Documentation knowledge graph created with four sections and 14 files.
+COMMUNICATION.md updated with the full Vw-Mx-Py-Tz coding system adapted from the crypto project. Version mapping table included with V0.0 for Phase 0 (process definition). GIT_STRATEGY.md task references updated to use the new coding format.
 
-**Structure.** Hierarchical organization with atomic files, breadcrumb navigation, and `README.md` tables of contents at each level. Adapted primarily from the blog project with elements from the crypto project.
+### Trunk-Based Development Adopted
 
-```
-docs/
-├── README.md
-├── DOCUMENTATION_STRATEGY.md
-├── overview/
-│   ├── README.md
-│   └── PRODUCT_IDENTITY.md
-├── architecture/
-│   ├── README.md
-│   └── TECHNOLOGY_STACK.md
-├── process/
-│   ├── README.md
-│   ├── COMMUNICATION.md
-│   ├── GIT_STRATEGY.md
-│   ├── TASKLOG.md
-│   ├── PROMPT.md
-│   └── REVERSE_PROMPT.md
-└── reference/
-    ├── README.md
-    └── GLOSSARY.md
-```
+GIT_STRATEGY.md rewritten with trunk-based development conventions following the crypto project. Feature branch naming convention (`<scope>/<short-description>`), linear history enforcement via rebase, and branch creation instructions documented. The "Branch Model" section replaced with full "Trunk-Based Development" section.
 
-### Process Documented
+### Decision Tracking Added
 
-Six process-related files created.
+Four files created in `docs/decisions/`.
 
-1. **COMMUNICATION.md.** Bidirectional protocol with forward prompt, reverse prompt, and task log. Work item coding system uses Px-Ty format.
-2. **GIT_STRATEGY.md.** Scoped conventional commits on `main` branch. One commit per prompted request.
-3. **TASKLOG.md.** Current task state with success criteria, breakdown, and history.
-4. **REVERSE_PROMPT.md.** This file. AI-to-human communication channel.
-5. **PROMPT.md.** Human-authored. Committed as-is per protocol.
-6. **Process README.md.** Table of contents with session startup protocol.
+1. **README.md.** Table of contents with decision status flow diagram and current counts.
+2. **PRIORITY.md.** Three blocking decisions documented (D1, D2, D3).
+3. **RESOLVED.md.** Empty archive, ready for resolved decisions.
+4. **BACKLOG.md.** Empty deferred list, ready for future items.
 
-### .gitignore Updated
+### Blocking Decisions Documented with Recommendations
 
-`secret/` added to `.gitignore` along with standard exclusions for OS artifacts and editor temporary files.
+**D1. PDF Form Population Strategy.** Recommends `pdftk-java` via `System.cmd/3` with XFDF data interchange. The Elixir ecosystem has no native library for AcroForm form filling. The Rust crate ecosystem has `lopdf` for low-level PDF manipulation, but the higher-level form-filling crates (`pdf_form`, `acroform`) are unmaintained (4+ years without release). `pdftk-java` has a multi-decade track record and is included in standard Linux package repositories. The critical unknown is whether the government form uses AcroForm or XFA format.
 
-### CLAUDE.md Created
+**D2. Screenshot Capture Strategy.** Recommends ChromicPDF (`chromic_pdf` hex, v1.17.0) for URL-based screenshot capture, or Wallaby (`wallaby` hex, v0.30.12) if full browser interaction is needed. ChromicPDF uses the Chrome DevTools Protocol directly (no ChromeDriver dependency) and runs as an OTP supervised process. Wallaby is more capable for interactive scenarios but was designed as a testing framework.
 
-Project-level AI agent instructions created at repository root. Includes project overview, technology stack, repository structure, documentation links, commit conventions, session startup protocol, and sensitive file guidance.
+**D3. Browser Automation Strategy.** Recommends Wallaby for interactive browser scenarios, or a standalone Rust CLI tool using `headless_chrome` (v1.0.21) to avoid BEAM scheduler concerns. This decision may be deferred if the initial scope is limited to manual application tracking rather than automated submission.
+
+### .gitkeep and .gitignore Updated
+
+`secret/.gitkeep` created. `.gitignore` pattern changed from `secret/` (ignores entire directory) to `secret/*` (ignores contents) with negation patterns `!secret/.gitkeep` and `!secret/*.example`. This allows the directory to be tracked while keeping sensitive contents excluded and permitting example files to document required settings.
+
+### Knowledge Graph Updated
+
+- `docs/README.md`: Decisions section added to contents table.
+- `docs/DOCUMENTATION_STRATEGY.md`: decisions/ directory added to structure diagram.
+- `CLAUDE.md`: Decisions section added to documentation table. Repository structure updated. Git Workflow section updated for trunk-based development.
+- `docs/process/README.md`: Cross-reference to decisions section added.
 
 ### Process Files Updated
 
-- TASKLOG.md: current task updated, history entry added.
-- REVERSE_PROMPT.md: overwritten.
+- TASKLOG.md: Current task updated, history entry added.
+- REVERSE_PROMPT.md: Overwritten.
 
 ---
 
 ## Questions for Human Review
 
-1. The work item coding system uses `Px-Ty` (Prompt-Task) rather than the blog's `Ax-Py-Tz` (Article-Prompt-Task) or the crypto project's `Vw-Mx-Py-Tz` (Version-Milestone-Prompt-Task). The article dimension does not apply to this project. Should a version or milestone dimension be added, or is `Px-Ty` sufficient?
+1. **D1 verification needed.** Is the government PDF an AcroForm or XFA form? This determines whether `pdftk-java` is viable. If you can share the PDF (in `secret/`), I can attempt to determine the form type programmatically.
 
-2. The git strategy currently uses direct commits to `main` (following the blog convention for a single-author project). Should this be changed to trunk-based development with feature branches (following the crypto convention) from the start?
+2. **D2/D3 scope clarification.** Does the system need to automate the act of submitting job applications, or is it limited to tracking manually submitted applications and capturing receipts afterward? This determines whether D3 (browser automation) is in scope for initial development.
 
-3. The technology stack documents Phoenix/Elixir with LiveView and Rust NIFs as specified. PDF manipulation, screenshot capture, and browser automation will require specific library choices. Should these decisions be deferred to a future prompt, or would you like to establish them now?
+3. **Feature branch for this commit.** The git strategy now specifies trunk-based development with feature branches, but this change itself was made on `main` since the convention was not yet in place. Future prompts will use feature branches. Is this acceptable, or would you prefer I retroactively restructure the history?
 
-4. The `secret/` directory exists but is empty except for whatever the human pilot has placed there. Should a `.gitkeep` file be added to ensure the directory is tracked by git while its contents remain excluded?
+4. **Version mapping expansion.** The Vw-Mx-Py-Tz coding currently defines only V0.0 (Phase 0). Should additional phases be defined now (for example, V0.1 for Phoenix scaffolding, V0.2 for PDF integration), or should they emerge as the project develops?
 
 ---
 
 ## Notes
 
-- This is the first prompt (P1) for the project. All process conventions are newly established and subject to revision based on human review.
-- The blog project uses `_docs/` as its documentation directory. This project uses `docs/` following the crypto project convention. The blog uses `_docs/` because Jekyll treats underscore-prefixed directories specially. Since this project does not use Jekyll, `docs/` is the appropriate choice.
-- No application code exists yet. The next logical step would be scaffolding the Phoenix application.
+- The `pdftk-java` recommendation requires a Java runtime in the deployment environment. This is a notable operational dependency for a project that otherwise uses Elixir and Rust.
+- The `pdfium` hex package (v0.1.27) wraps Google's PDFium engine, which is the PDF renderer used in Chrome. If it supports AcroForm write operations, it would be a superior choice to `pdftk-java` because it eliminates the Java dependency. This was not confirmed during research and warrants investigation.
+- All three blocking decisions (D1-D3) require Chrome or Chromium in the deployment environment. This is a shared infrastructure dependency.
+- PROMPT.md was modified by the human pilot and is included in this commit per the communication protocol.
