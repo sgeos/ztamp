@@ -35,8 +35,8 @@ Each decision includes:
 
 | Category | Count |
 |----------|-------|
-| Resolved | 0 |
-| Priority | 3 (D1-D3) |
+| Resolved | 3 (R1-R3) |
+| Priority | 0 |
 | Backlog | 0 |
 
 ## Related Sections

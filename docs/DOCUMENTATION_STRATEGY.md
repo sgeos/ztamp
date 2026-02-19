@@ -41,6 +41,16 @@ docs/
 │   ├── RESOLVED.md
 │   ├── PRIORITY.md
 │   └── BACKLOG.md
+├── roadmap/
+│   ├── README.md
+│   ├── PHASE_0_PROCESS.md
+│   ├── PHASE_1_STRUCTURE.md
+│   ├── PHASE_2_PDF_WRITE.md
+│   ├── PHASE_3_PDF_CONCAT.md
+│   ├── PHASE_4_SCREENSHOT.md
+│   ├── PHASE_5_SUBMISSION.md
+│   ├── PHASE_6_TRACKING.md
+│   └── PHASE_7_RESUME.md
 ├── process/
 │   ├── README.md
 │   ├── COMMUNICATION.md
@@ -80,3 +90,4 @@ docs/
 |------|--------|---------|
 | 2026-02-19 | Claude | Initial creation. Adapted from reference projects. |
 | 2026-02-19 | Claude | Added decisions/ section to directory structure. |
+| 2026-02-19 | Claude | Added roadmap/ section to directory structure. |

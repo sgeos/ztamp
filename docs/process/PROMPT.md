@@ -10,49 +10,68 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 ## Comments
 
-We will now refine the process.
-
 Answers to questions.
 
-1. Use `Vw-Mx-Py-Tz` coding.
-2. Use trunk-based development with feature branches following the crypto convention.
-3. The crypto project has files for documenting and resolving blockers.
-   We need that process for this project.
-4. `.gitkeep` is a good idea.
+1. I split the last page from the government PDF and put it in `secret`.
+2. I believe the intent is proof of submission.
+   The bureaucrats want proof of submission, and a "take my word for it."
+   I do not actually know what their criteria for proof is.
+3. No need to retroactively do anything.
+   Process establishment takes a few commits, and this is expected.
+4. Additional phases should be mapped.
+   We need the following:
+   - Stub project structure
+   - PDF write PoC
+   - PDF concatenation PoC
+   - Browser screenshot PoC
+   - Per platform submission logic
+   - Submission track (where, when, etc)
+   - Per application resume and cover letter customization
+     - Multiple subtasks
+   The goal is a managed submission process with tracking for compliance.
+   Another goal is high volume submissions.
+
+Blocking decisions.
+
+1. D1. Ideally, I want to stick to Rust tooling.
+       I think we can make a command line utility that writes strings
+       and places images PDF files.
+       `utility --do-task param form.pdf`
+       This utility can then be called multiple times to fill out the form.
+       This strategy may require a file to track field positions and widths.
+2. D2. It looks like `wallaby` makes sense for D3.
+       In isolation, I would say `chromic_pdf`,
+       standardizing on `wallaby` probably makes sense.
+3. D3. `wallaby` appears to be the winner for human in the loop applications.
 
 ## Objectives
 
-### Adopt Coding
+### Attempt to Determine PDF Type
 
-Adopt task coding structure from the crypto project.
-I think it is `Vw-Mx-Py-Tz`.
+I split the last page from the government PDF and put it in `secret`.
+I am open to type conversion, if possible.
 
-- `/Users/bsechter/projects/crypto/cordial_cantina`
+### Document Version Phases
 
-Update the knowledge graph.
+Document version phases.
+This is very loose feature list.
+   - Stub project structure
+   - PDF write PoC
+   - PDF concatenation PoC
+   - Browser screenshot PoC
+   - Per platform submission logic
+   - Submission track (where, when, etc)
+   - Per application resume and cover letter customization
+     - Multiple subtasks
 
-### Adopt Trunk Based Development
+### Document Blocker Decisions
 
-Use trunk-based development with feature branches following the crypto convention.
-Document this in the knowledge graph.
+Document blocker decisions.
 
-### Adopt Trunk Based Development
+### Globally Whitelist Example and .gitkeep Files
 
-The crypto project has files for documenting and resolving blockers.
-We need that process for this project.
-Document PDF manipulation, screenshot capture, and browser automation as blocking decisions.
-Include recommendations in your next reverse prompt.
-Feel free to research options.
-
-### Add .gitkeep to Secret Folder
-
-Add `.gitkeep` to the `secret` folder.
-
-### Whitelist Example Files
-
-Whitelist `*.example` files in `.gitignore`.
-This will allow `.example` files the `secret` folder to show up in the repo.
-It will also allow the `*.example` files to document needed settings.
+Globally whitelist `*.example` and `.gitkeep` files in `.gitignore`.
+I am pretty sure this is possible.
 
 ## Context
 
@@ -72,14 +91,10 @@ This PDF should not be included in the git repo.
 
 ## Success Criteria
 
-- Document use of `Vw-Mx-Py-Tz` coding.
-- Document use of trunk-based development with feature branches following the crypto convention.
-- Add files to track blockers and decisions to the knowledge graph.
-  Add these blockers to those files:
-  PDF manipulation, screenshot capture, and browser automation
-- Include recommendations for blocker resolutions in your next reverse prompt.
-- Add `.gitkeep` to the `secret` folder.
-- Whitelist `*.example` files in `.gitignore`.
+- Attempt to determine PDF type. Report in reverse prompt.
+- Document version phases.
+- Document blocker decisions.
+- Globally whitelist `*.example` and `.gitkeep` files in `.gitignore`.
 
 ## Notes
 

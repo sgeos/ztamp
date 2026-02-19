@@ -27,6 +27,7 @@ tanf/                          # Git repository root
     ├── overview/              # Product identity and context
     ├── architecture/          # Technology stack and design
     ├── decisions/             # Architectural and design decisions
+    ├── roadmap/               # Development phases (V0.0-V0.7)
     ├── process/               # Workflow and communication
     └── reference/             # Glossary and reference material
 ```
@@ -40,6 +41,7 @@ A knowledge graph is maintained in `docs/`. Start at [`docs/README.md`](docs/REA
 | Overview | [`docs/overview/`](docs/overview/README.md) | Product identity and project context |
 | Architecture | [`docs/architecture/`](docs/architecture/README.md) | Technology stack and system design |
 | Decisions | [`docs/decisions/`](docs/decisions/README.md) | Architectural and design decisions |
+| Roadmap | [`docs/roadmap/`](docs/roadmap/README.md) | Development phases and version planning |
 | Process | [`docs/process/`](docs/process/README.md) | Development workflow, communication, and task tracking |
 | Reference | [`docs/reference/`](docs/reference/README.md) | Glossary and supplementary reference material |
 

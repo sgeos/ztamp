@@ -1,9 +1,9 @@
 # Secrets and sensitive documents (ignore contents, not the directory itself)
 secret/*
 
-# Whitelist .gitkeep and *.example files inside secret/
-!secret/.gitkeep
-!secret/*.example
+# Globally whitelist .gitkeep and *.example files
+!.gitkeep
+!*.example
 
 # OS artifacts
 .DS_Store

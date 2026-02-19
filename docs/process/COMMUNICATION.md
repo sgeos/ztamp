@@ -101,8 +101,15 @@ All work items use the **Vw-Mx-Py-Tz** coding system for traceability across ver
 | Phase | Version | Description |
 |-------|---------|-------------|
 | Phase 0 | V0.0 | Process definition and project setup |
+| Phase 1 | V0.1 | Project structure (Phoenix/Elixir scaffolding, Rust NIF) |
+| Phase 2 | V0.2 | PDF write PoC (Rust CLI for text/image overlay) |
+| Phase 3 | V0.3 | PDF concatenation PoC |
+| Phase 4 | V0.4 | Browser screenshot PoC (Wallaby) |
+| Phase 5 | V0.5 | Per-platform submission logic |
+| Phase 6 | V0.6 | Submission tracking and compliance reporting |
+| Phase 7 | V0.7 | Resume and cover letter customization |
 
-Additional phases and versions will be defined as the project roadmap develops.
+See [Roadmap](../roadmap/README.md) for detailed phase descriptions and dependencies.
 
 ### Usage
 
