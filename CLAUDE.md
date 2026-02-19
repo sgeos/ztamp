@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TANF Job Search Automation tool. Automates job search documentation for Temporary Assistance for Needy Families (TANF) compliance, including government PDF form population, job application tracking, and receipt screenshot capture.
 
-**Status**: Initial specification and process setup. No application code yet.
+**Status**: V0.1 Project Structure. Phoenix/LiveView app scaffolded with Rust NIF integration.
 
 ## Technology Stack
 
@@ -20,6 +20,15 @@ TANF Job Search Automation tool. Automates job search documentation for Temporar
 tanf/                          # Git repository root
 ├── CLAUDE.md                  # AI agent instructions
 ├── .gitignore                 # Excludes secret/ and editor artifacts
+├── rztamp/                    # Portable Rust library (shared logic)
+│   ├── Cargo.toml
+│   └── src/lib.rs
+├── ztamp/                     # Phoenix/LiveView web application
+│   ├── mix.exs
+│   ├── lib/ztamp/nif.ex       # Rustler NIF wrapper
+│   └── native/nif/            # Rust NIF bridge (depends on rztamp)
+│       ├── Cargo.toml
+│       └── src/lib.rs
 ├── secret/                    # Sensitive files (gitignored, .gitkeep tracked)
 └── docs/                      # Documentation knowledge graph
     ├── README.md              # Documentation root

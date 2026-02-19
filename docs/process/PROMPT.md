@@ -12,66 +12,41 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 Answers to questions.
 
-1. I split the last page from the government PDF and put it in `secret`.
-2. I believe the intent is proof of submission.
-   The bureaucrats want proof of submission, and a "take my word for it."
-   I do not actually know what their criteria for proof is.
-3. No need to retroactively do anything.
-   Process establishment takes a few commits, and this is expected.
-4. Additional phases should be mapped.
-   We need the following:
-   - Stub project structure
-   - PDF write PoC
-   - PDF concatenation PoC
-   - Browser screenshot PoC
-   - Per platform submission logic
-   - Submission track (where, when, etc)
-   - Per application resume and cover letter customization
-     - Multiple subtasks
-   The goal is a managed submission process with tracking for compliance.
-   Another goal is high volume submissions.
+1. Is it possible to extract the image?
+   Ideally, I want to straighten it, and clear out the filled in fields.
+   Information in the fields can be moved to `secrets.toml`.
+   Having said that, proactively defining fields in `toml` or some other format makes sense.
+2. In theory, it might make sense to extract the image and use it to generate
+   new PDFs with `printpdf`.
+   This likely requires a different approach than the one I mentioned for the CLI tool.
+   I think `lopdf` is suitable for one at a time edits via CLI.
+   Thoughts on the best strategy?
+3. We can start V0.1. See below.
+4. Please commit `secret/secrets.toml.example`.
 
-Blocking decisions.
+The project structure is basically going to be same as the crypto reference project.
+Feel free to view it.
+`/Users/bsechter/projects/crypto/cordial_cantina`
 
-1. D1. Ideally, I want to stick to Rust tooling.
-       I think we can make a command line utility that writes strings
-       and places images PDF files.
-       `utility --do-task param form.pdf`
-       This utility can then be called multiple times to fill out the form.
-       This strategy may require a file to track field positions and widths.
-2. D2. It looks like `wallaby` makes sense for D3.
-       In isolation, I would say `chromic_pdf`,
-       standardizing on `wallaby` probably makes sense.
-3. D3. `wallaby` appears to be the winner for human in the loop applications.
+- Top level directory.
+- Rust subproject `rztamp` for portable Rust code.
+- Elixir subproject `ztamp`.
+- NIF subproject in Elixir subproject that pulls in `rztamp` as a dependancy.
+- It probably makes sense to have a `tools` subproject for CLI tools
+  based on `rztamp` and utility shell scripts.
 
 ## Objectives
 
-### Attempt to Determine PDF Type
+### Generate Project Structure
 
-I split the last page from the government PDF and put it in `secret`.
-I am open to type conversion, if possible.
+- `rztamp` Rust library.
+- `ztamp` Phoenix project with Liveview and Postgresql.
+- NIF subproject in Elixir subproject that pulls in `rztamp` as a dependancy.
+- Rust project loads stub NIF.
 
-### Document Version Phases
+### Commit secrets.toml.example
 
-Document version phases.
-This is very loose feature list.
-   - Stub project structure
-   - PDF write PoC
-   - PDF concatenation PoC
-   - Browser screenshot PoC
-   - Per platform submission logic
-   - Submission track (where, when, etc)
-   - Per application resume and cover letter customization
-     - Multiple subtasks
-
-### Document Blocker Decisions
-
-Document blocker decisions.
-
-### Globally Whitelist Example and .gitkeep Files
-
-Globally whitelist `*.example` and `.gitkeep` files in `.gitignore`.
-I am pretty sure this is possible.
+Please commit `secret/secrets.toml.example`.
 
 ## Context
 
@@ -91,10 +66,9 @@ This PDF should not be included in the git repo.
 
 ## Success Criteria
 
-- Attempt to determine PDF type. Report in reverse prompt.
-- Document version phases.
-- Document blocker decisions.
-- Globally whitelist `*.example` and `.gitkeep` files in `.gitignore`.
+- Specified project structure generated.
+- `secret/secrets.toml.example` committed.
+- Response to questions and discussion in reverse prompt.
 
 ## Notes
 

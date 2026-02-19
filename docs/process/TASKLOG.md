@@ -8,37 +8,42 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: PDF Analysis, Roadmap, and Decision Resolution (V0.0-M1-P3)
+**Name**: Project Structure Generation (V0.1-M1-P1)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
-- [x] Attempt to determine PDF type. Report in reverse prompt.
-- [x] Document version phases.
-- [x] Document blocker decisions.
-- [x] Globally whitelist `*.example` and `.gitkeep` files in `.gitignore`.
+- [x] Generate `rztamp` Rust library.
+- [x] Generate `ztamp` Phoenix project with LiveView and PostgreSQL.
+- [x] Add NIF subproject in `ztamp` that depends on `rztamp`.
+- [x] Verify stub NIF loads and calls through to `rztamp`.
+- [x] Commit `secret/secrets.toml.example`.
+- [x] Respond to PDF strategy questions in reverse prompt.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.0-M1-P3-T1 | Analyze PDF type | Complete | PDF is flat scanned image (CCITT Group 4, 1704x2200, 1-bit). No AcroForm or XFA. Creator: RICOH IM 5000 scanner. |
-| V0.0-M1-P3-T2 | Document version phases (V0.0-V0.7) | Complete | roadmap/ directory with README.md and 8 phase files. Dependency graph documented. |
-| V0.0-M1-P3-T3 | Resolve D1-D3 blocking decisions | Complete | D1 revised to Rust CLI (not pdftk). D2/D3 standardized on Wallaby. All moved to RESOLVED.md as R1-R3. |
-| V0.0-M1-P3-T4 | Globally whitelist .gitkeep and *.example | Complete | .gitignore updated with global `!.gitkeep` and `!*.example` negation patterns. |
-| V0.0-M1-P3-T5 | Update knowledge graph references | Complete | docs/README.md, DOCUMENTATION_STRATEGY.md, CLAUDE.md, COMMUNICATION.md updated with roadmap section and version mapping. |
-| V0.0-M1-P3-T6 | Update process files and commit | Complete | TASKLOG.md, REVERSE_PROMPT.md overwritten. Committed on feature branch. |
+| V0.1-M1-P1-T1 | Generate rztamp Rust library | Complete | `cargo test` passes. `alive()` returns `true`. |
+| V0.1-M1-P1-T2 | Generate ztamp Phoenix project | Complete | `mix phx.new ztamp --database postgres --live`, `mix deps.get` successful. |
+| V0.1-M1-P1-T3 | Add Rustler dependency to ztamp | Complete | `{:rustler, "~> 0.34"}` added to mix.exs. Resolves to 0.37.3. |
+| V0.1-M1-P1-T4 | Create NIF bridge (native/nif/) | Complete | Cargo.toml depends on rztamp via `path = "../../../rztamp"`. `rustler = "0.37"`. |
+| V0.1-M1-P1-T5 | Create Elixir NIF wrapper | Complete | `lib/ztamp/nif.ex` with `nop/0` and `alive/0`. `mix compile` successful. |
+| V0.1-M1-P1-T6 | Verify NIF end-to-end | Complete | `Ztamp.Nif.nop()` returns `:ok`. `Ztamp.Nif.alive()` returns `true`. |
+| V0.1-M1-P1-T7 | Populate secrets.toml.example | Complete | Template with participant and form sections. |
+| V0.1-M1-P1-T8 | Update CLAUDE.md structure diagram | Complete | Repository structure updated with rztamp/, ztamp/, native/nif/. |
+| V0.1-M1-P1-T9 | Update process files and commit | Complete | TASKLOG.md, REVERSE_PROMPT.md overwritten. Committed on feature branch. |
 
 ## Notes
 
-- PDF analysis revealed the government form is a flat scan, not a fillable form. This changed the D1 resolution from pdftk-java (AcroForm filling) to Rust CLI (coordinate-based text/image overlay).
-- Phase 0 (V0.0) is now considered complete with P3.
+- This is the first prompt in V0.1 (Project Structure). V0.0 (Process Definition) is complete.
+- The `tools` subproject for CLI tools was mentioned in the prompt comments but was not listed as an objective. It can be added in a future prompt.
+- Rust edition 2024 used for both rztamp and the NIF crate.
 
 ## History
 
 | Date | Change |
 |------|--------|
-| 2026-02-19 | V0.0-M1-P1: Knowledge graph, process documentation, CLAUDE.md, git strategy, communication protocol, and .gitignore established. |
-| 2026-02-19 | V0.0-M1-P2: Process refined. Vw-Mx-Py-Tz coding adopted. Trunk-based development adopted. Decision tracking added with D1-D3 blocking decisions. .gitkeep and *.example whitelist added. |
-| 2026-02-19 | V0.0-M1-P3: PDF analyzed (flat scan, no form fields). Roadmap V0.0-V0.7 documented. D1-D3 resolved as R1-R3. Global .gitkeep/*.example whitelist. |
+| 2026-02-19 | V0.0: Process definition, knowledge graph, PDF analysis, roadmap, decision resolution. |
+| 2026-02-19 | V0.1-M1-P1: Project structure generated. rztamp Rust library, ztamp Phoenix project, NIF bridge with Rustler, secrets.toml.example. |
