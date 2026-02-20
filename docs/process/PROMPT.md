@@ -10,22 +10,26 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 ## Comments
 
-Answers to questions.
-
-1. Form offset file location is acceptable.
-2. Coordinate system is acceptable as long as it works.
-3. I want to use a generate, inspect, adjust loop with colored text for calibration.
-4. `printpdf` can be added as a dependency now.
+(none)
 
 ## Objectives
 
-### Update Documentation
+### Merge V0.1 Branch Into Main
 
-Update documentation where relevant.
+Merge V0.1 branch into main.
 
-### V0.1 Status Update
+### Attempt V0.2 PoC
 
-Report on any remaining V0.1 work.
+- Put portable logic in `rztamp`.
+- Generate a Rust-based CLI tool that can fill out all fields.
+  - `printpdf` based.
+  - CLI tool repo lives in `tools`. New project that pulls in `rztamp` as a dependency.
+  - Colored text can be printed.
+- Use tool to generate sample output file in `secret`.
+  - Use red text for non-job search fields.
+  - Circle all options.
+  - Alternate between blue and magenta for job search rows.
+  - Output should not overwrite existing files.
 
 ## Context
 
@@ -37,8 +41,9 @@ Report on any remaining V0.1 work.
 
 ## Success Criteria
 
-- Relevant documentation updated.
-- Report on any remaining V0.1 work.
+- V0.1 merged into main.
+- Rust-based CLI tool generated.
+- Sample output placed in `secret`
 
 ## Notes
 

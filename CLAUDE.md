@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TANF Job Search Automation tool. Automates job search documentation for Temporary Assistance for Needy Families (TANF) compliance, including government PDF form population, job application tracking, and receipt screenshot capture.
 
-**Status**: V0.1 Complete. Phoenix/LiveView app scaffolded with Rust NIF integration. Field extraction and form offsets done. Ready for V0.2 (PDF Write PoC).
+**Status**: V0.2 PDF Write PoC complete. CLI tool generates filled PDF forms with printpdf. Calibration in progress.
 
 ## Technology Stack
 
@@ -21,8 +21,15 @@ tanf/                          # Git repository root
 ├── CLAUDE.md                  # AI agent instructions
 ├── .gitignore                 # Excludes secret/ and editor artifacts
 ├── rztamp/                    # Portable Rust library (shared logic)
-│   ├── Cargo.toml
-│   └── src/lib.rs
+│   ├── Cargo.toml             # printpdf, image, serde, toml
+│   └── src/
+│       ├── lib.rs
+│       ├── offsets.rs          # Form field offset types (TOML deserialization)
+│       └── pdf.rs              # PDF generation (template + text overlay)
+├── tools/                     # Rust CLI tools
+│   ├── Cargo.toml             # Depends on rztamp
+│   └── src/
+│       └── fill.rs            # tanf-fill: generate filled PDF forms
 ├── ztamp/                     # Phoenix/LiveView web application
 │   ├── mix.exs
 │   ├── lib/ztamp/nif.ex       # Rustler NIF wrapper

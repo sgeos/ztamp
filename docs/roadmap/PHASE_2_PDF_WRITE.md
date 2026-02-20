@@ -54,4 +54,13 @@ PDF generation routines live in the `rztamp` library. This allows them to be use
 
 ## Status
 
-**Not started.**
+**PoC complete.** Calibration of field offsets remains.
+
+| Deliverable | Status | Notes |
+|-------------|--------|-------|
+| `printpdf` dependency | Complete | `printpdf 0.9.1` with `tiff` feature in `rztamp/Cargo.toml`. |
+| Template image background | Complete | `rztamp::pdf::generate_form_pdf()` places TIFF as page background via `XObjectTransform` with DPI scaling. |
+| Text overlay | Complete | Colored text at arbitrary positions using builtin Helvetica font via `PdfFontHandle::Builtin`. |
+| CLI tool | Complete | `tools/src/fill.rs` (`tanf-fill` binary). Reads offsets TOML, secrets TOML, and template image. Generates filled PDF with no-overwrite protection. |
+| Field offset calibration | In progress | Initial estimates placed. Calibration sample generated at `secret/calibration_sample.pdf`. Positions need adjustment via generate-inspect-adjust loop. |
+| Tests | Not started | Unit tests for PDF generation deferred until offsets are calibrated. |

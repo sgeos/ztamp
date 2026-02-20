@@ -4,6 +4,9 @@
 //! Elixir) and standalone CLI tools. It is designed to be `no_std` compatible
 //! where feasible, enabling use in constrained environments.
 
+pub mod offsets;
+pub mod pdf;
+
 /// Verify the library is accessible.
 ///
 /// Returns `true`. Used by downstream crates to confirm the dependency link.

@@ -8,31 +8,33 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: Documentation Update and V0.1 Status (V0.1-M1-P3)
+**Name**: V0.2 PDF Write PoC (V0.2-M1-P1)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
-- [x] Update relevant documentation.
-- [x] Report on any remaining V0.1 work.
+- [x] V0.1 merged into main.
+- [x] Rust-based CLI tool generated.
+- [x] Sample output placed in `secret/`.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.1-M1-P3-T1 | Update PHASE_1_STRUCTURE.md | Complete | Status set to Complete with deliverable verification table. |
-| V0.1-M1-P3-T2 | Update PHASE_2_PDF_WRITE.md | Complete | Rewritten to reflect printpdf strategy, form offsets location, calibration approach, rztamp as routine location. |
-| V0.1-M1-P3-T3 | Update RESOLVED.md (R1) | Complete | R1 refined: printpdf for generation, lopdf reserved for V0.3. Workflow, rationale, and residual questions updated. |
-| V0.1-M1-P3-T4 | Update PRIORITY.md | Complete | Field coordinate and lopdf-vs-printpdf questions marked resolved. TIFF compatibility question added. |
-| V0.1-M1-P3-T5 | Update CLAUDE.md status | Complete | Status updated to "V0.1 Complete". |
-| V0.1-M1-P3-T6 | Write REVERSE_PROMPT.md and commit | Complete | V0.1 status report and documentation summary. |
+| V0.2-M1-P1-T1 | Merge V0.1 branch into main | Complete | Fast-forward merge of `feat/field-extraction-and-offsets` (2 commits). Branch deleted. |
+| V0.2-M1-P1-T2 | Add printpdf to rztamp | Complete | `printpdf 0.9.1` with `tiff` feature. `image`, `serde`, `toml` also added. |
+| V0.2-M1-P1-T3 | Implement PDF generation in rztamp | Complete | `rztamp::pdf` module: `generate_form_pdf()`, `build_calibration_fields()`. `rztamp::offsets` module: TOML deserialization types. |
+| V0.2-M1-P1-T4 | Create CLI tool in tools/ | Complete | `tanf-fill` binary. Reads offsets, secrets, template. Generates colored calibration PDF. No-overwrite protection. |
+| V0.2-M1-P1-T5 | Generate sample output | Complete | `secret/calibration_sample.pdf` (85,968 bytes). 112 text fields, 8 circle marks. Red/blue/magenta colored text visible. |
+| V0.2-M1-P1-T6 | Update documentation and commit | Complete | CLAUDE.md, PHASE_2, TASKLOG, REVERSE_PROMPT, .gitignore updated. |
 
 ## Notes
 
-- V0.1 is complete. All 5 deliverables verified (Phoenix app, NIF integration, database, test framework, dev environment docs).
-- The human pilot reordered `secrets.toml` sections and improved `secrets.toml.example` with representative placeholder values.
-- Four decisions from the previous reverse prompt were resolved in the prompt comments.
+- The `printpdf` 0.9.1 API uses an ops-based pattern (`Vec<Op>`) rather than the older layer-based API. Key types: `PdfFontHandle::Builtin(BuiltinFont::Helvetica)`, `RawImage::decode_from_bytes()`, `XObjectTransform` with DPI-based scaling.
+- Coordinate conversion: form offsets use mm from top-left. PDF uses points from bottom-left. Conversion: `pdf_y = (page_height_mm - offset_y_mm) * 72 / 25.4`.
+- Circles are drawn as 4-segment bezier curve approximations of ellipses.
+- The `image` crate dependency in `rztamp` is technically redundant since `printpdf`'s `tiff` feature pulls it in, but it is kept explicit for clarity and for potential direct image manipulation in future.
 
 ## History
 
@@ -41,4 +43,5 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.0: Process definition, knowledge graph, PDF analysis, roadmap, decision resolution. |
 | 2026-02-19 | V0.1-M1-P1: Project structure generated. rztamp Rust library, ztamp Phoenix project, NIF bridge with Rustler, secrets.toml.example. |
 | 2026-02-19 | V0.1-M1-P2: Field extraction and form offsets. secrets.toml populated, form_offsets.toml created in assets/form/, documentation updated. |
-| 2026-02-19 | V0.1-M1-P3: Documentation update and V0.1 status report. Phase docs, decision records, and CLAUDE.md updated. V0.1 declared complete. |
+| 2026-02-19 | V0.1-M1-P3: Documentation update and V0.1 status report. V0.1 declared complete. |
+| 2026-02-19 | V0.2-M1-P1: PDF Write PoC. printpdf integration, rztamp pdf/offsets modules, tanf-fill CLI tool, calibration sample generated. |
