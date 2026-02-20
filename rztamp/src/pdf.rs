@@ -459,6 +459,11 @@ fn mm_to_pt(mm: f32) -> f32 {
 /// When `circle_all` is true, all circle-one options get ellipses. When
 /// false, only the default selected option in each series is circled
 /// (pay frequency: Weekly, insurance: None).
+///
+/// When `fill_table` is true, job search table rows are populated with
+/// hardcoded sample data. When false, the table is left empty.
+///
+/// Fields with no matching value in the `values` map are skipped entirely.
 pub fn build_calibration_fields(
     offsets: &FormOffsets,
     values: &std::collections::HashMap<String, String>,
@@ -467,6 +472,7 @@ pub fn build_calibration_fields(
     row_color_b: TextColor,
     show_circle_labels: bool,
     circle_all: bool,
+    fill_table: bool,
 ) -> (Vec<TextField>, Vec<CircleMark>) {
     let mut text_fields = Vec::new();
     let mut circle_marks = Vec::new();
@@ -475,12 +481,14 @@ pub fn build_calibration_fields(
     let mut field_names: Vec<&String> = offsets.fields.keys().collect();
     field_names.sort();
 
-    // Place all named fields.
+    // Place named fields that have values. Fields with no matching
+    // value in the map are skipped (not rendered).
     for name in field_names {
         let offset = &offsets.fields[name];
-        let text = values.get(name.as_str())
-            .cloned()
-            .unwrap_or_else(|| name.to_uppercase());
+        let text = match values.get(name.as_str()) {
+            Some(v) => v.clone(),
+            None => continue,
+        };
 
         if is_circle_option(name) {
             let draw_ellipse = circle_all || is_default_selected(name);
@@ -516,30 +524,31 @@ pub fn build_calibration_fields(
         });
     }
 
-    // Place job search table rows.
-    // Collect and sort column names for deterministic output.
-    let mut col_names: Vec<&String> = offsets.table.columns.keys().collect();
-    col_names.sort();
+    // Place job search table rows (hardcoded sample data, debug only).
+    if fill_table {
+        let mut col_names: Vec<&String> = offsets.table.columns.keys().collect();
+        col_names.sort();
 
-    for row in 0..offsets.table.row_count {
-        let y = offsets.table.first_row_y + (row as f32) * offsets.table.row_height;
-        let color = if row % 2 == 0 { row_color_a } else { row_color_b };
+        for row in 0..offsets.table.row_count {
+            let y = offsets.table.first_row_y + (row as f32) * offsets.table.row_height;
+            let color = if row % 2 == 0 { row_color_a } else { row_color_b };
 
-        for col_name in &col_names {
-            if col_name.as_str() == "office_use_only" {
-                continue;
+            for col_name in &col_names {
+                if col_name.as_str() == "office_use_only" {
+                    continue;
+                }
+
+                let col = &offsets.table.columns[col_name.as_str()];
+                let text = sample_table_text(col_name, row + 1);
+                let x_mm = align_in_width(col.x, col.width, &text, col.font_size, col.alignment);
+                text_fields.push(TextField {
+                    text,
+                    x_mm,
+                    y_mm: y,
+                    font_size: col.font_size,
+                    color,
+                });
             }
-
-            let col = &offsets.table.columns[col_name.as_str()];
-            let text = sample_table_text(col_name, row + 1);
-            let x_mm = align_in_width(col.x, col.width, &text, col.font_size, col.alignment);
-            text_fields.push(TextField {
-                text,
-                x_mm,
-                y_mm: y,
-                font_size: col.font_size,
-                color,
-            });
         }
     }
 

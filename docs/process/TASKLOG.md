@@ -8,28 +8,30 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.2 Debug Fill Flag and PoC Regeneration (V0.2-M1-P14)
+**Name**: V0.2 Four PoC Variants (V0.2-M1-P15)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
 - [x] Debug fill flag added to export tool.
-- [x] Three PoCs generated.
+- [x] Four PoCs generated.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.2-M1-P14-T1 | Add --debug-fill flag | Complete | `--debug-fill` boolean flag added to CLI Args. When set, `build_value_map` includes hardcoded test data (signatures, employment section, pay frequency, insurance). Without it, only secrets-sourced fields are populated. |
-| V0.2-M1-P14-T2 | Generate Almost Production PoC | Complete | `secret/poc_production.pdf` (87,965 bytes). Black text, no grid, no labels, 2 circle marks (one per series), red watermark, --debug-fill. |
-| V0.2-M1-P14-T3 | Generate Black Text Testing PoC | Complete | `secret/poc_testing.pdf` (89,632 bytes). Black text, no grid, no labels, 8 circle marks (all), red watermark, --debug-fill. |
-| V0.2-M1-P14-T4 | Generate Debug PoC | Complete | `secret/poc_debug.pdf` (100,544 bytes). Calibration colors, 5mm green grid, labels, 8 circle marks (all), red watermark, --debug-fill. |
+| V0.2-M1-P15-T1 | Fix build_calibration_fields to skip missing values | Complete | Named fields with no matching value in the map are now skipped entirely (previously rendered as uppercase field name). |
+| V0.2-M1-P15-T2 | Gate table generation behind fill_table parameter | Complete | `fill_table: bool` parameter added to `build_calibration_fields`. When false, job search table rows are not generated. Caller passes `args.debug_fill`. |
+| V0.2-M1-P15-T3 | Generate Production PoC | Complete | `secret/poc_production.pdf` (77,578 bytes). 8 text fields (secrets only), 0 circle marks, black text, no grid, no labels, no watermark, no debug fill. |
+| V0.2-M1-P15-T4 | Generate Almost Production PoC | Complete | `secret/poc_almost_production.pdf` (87,965 bytes). 104 text fields, 2 circle marks, black text, no grid, no labels, red watermark, debug fill. |
+| V0.2-M1-P15-T5 | Generate Black Text Testing PoC | Complete | `secret/poc_testing.pdf` (89,632 bytes). 104 text fields, 8 circle marks, black text, no grid, no labels, red watermark, debug fill. |
+| V0.2-M1-P15-T6 | Generate Debug PoC | Complete | `secret/poc_debug.pdf` (100,544 bytes). 112 text fields, 8 circle marks, calibration colors, 5mm green grid, labels, red watermark, debug fill. |
 
 ## Notes
 
-- The `build_value_map` function now takes a `debug_fill: bool` parameter. Secrets-sourced fields (case_name, upi_number, job_search, submission) are always included. Debug test data (signatures, employment, pay frequency, insurance) requires `--debug-fill`.
-- Production use will supply real data for signature, employment, and other fields through a mechanism to be determined. Without `--debug-fill`, those fields are simply absent from the value map and not rendered.
+- The `build_calibration_fields` function now skips named fields with no value in the map instead of falling back to the uppercase field name. This means the `--debug-fill` flag has a meaningful effect: without it, only secrets-sourced fields appear.
+- The `fill_table` parameter gates hardcoded sample table data. Without `--debug-fill`, the table is empty.
 - Previous notes on printpdf API, form dimensions, coordinate system, alignment, labels flag, watermark, circle-all, and text width estimation remain valid.
 
 ## History
@@ -46,3 +48,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.2-M1-P12: Employment date fix. Start date and first check year changed to 2001. |
 | 2026-02-19 | V0.2-M1-P13: Watermark and three PoCs. --watermark and --circle-all flags. Three PoC variants generated. |
 | 2026-02-19 | V0.2-M1-P14: Debug fill flag. --debug-fill gates hardcoded test data. Three PoCs regenerated. |
+| 2026-02-19 | V0.2-M1-P15: Four PoC variants. Fixed missing-value handling (skip instead of uppercase fallback). Gated table behind fill_table. Production PoC with secrets-only data. |

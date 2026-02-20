@@ -16,15 +16,19 @@ Answers to questions in the reverse prompt.
 
 ## Objectives
 
-### Refactor Export Tool
-
-Add a `--debug-fill` flag that fills the form with the current test data.
-Production use will need to supply real data.
-
-### Generate Three PoC File In Preparation for Concatenation
+### Generate Four PoC Files In Preparation for Concatenation
 
 Reexport each PoC file with the new flag.
 Each file should have a different name.
+
+#### Production PoC
+
+- No grid.
+- All text is black.
+- No ellipse labels.
+- Only one ellipse in each series is circled.
+- No debug test data.
+- No watermark.
 
 #### Almost Production PoC
 
@@ -32,6 +36,7 @@ Each file should have a different name.
 - All text is black.
 - No ellipse labels.
 - Only one ellipse in each series is circled.
+- Fill with debug test data.
 - Red watermark.
 
 #### Black Text Testing PoC
@@ -40,6 +45,7 @@ Each file should have a different name.
 - All text is black.
 - No ellipse labels.
 - All ellipses in each series circled.
+- Fill with debug test data.
 - Red watermark.
 
 #### Debug PoC
@@ -48,6 +54,7 @@ Each file should have a different name.
 - Debug colors for text.
 - Ellipse labels.
 - All ellipses in each series circled.
+- Fill with debug test data.
 - Red watermark.
 
 ## Context
@@ -61,7 +68,7 @@ Each file should have a different name.
 ## Success Criteria
 
 - Debug fill flag added to export tool.
-- Three PoCs generated.
+- Four PoCs generated.
 
 ## Notes
 

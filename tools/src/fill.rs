@@ -285,6 +285,7 @@ fn main() {
         row_color_b,
         args.show_labels,
         args.circle_all,
+        args.debug_fill,
     );
 
     let rotation_label = match args.rotation {
