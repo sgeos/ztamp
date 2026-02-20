@@ -9,39 +9,47 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.2-M1-P6 Offset Rescaling
+**Task**: V0.2-M1-P7 Debug Data and Text Centering
 
 ---
 
 ## Verification
 
-### Offset Rescaling (assets/form/form_offsets.toml)
+### Four-Digit Years
 
-All coordinate values in `form_offsets.toml` were rescaled from the old portrait coordinate system (215.9mm x 279.4mm) to the corrected landscape coordinate system (279.4mm x 215.9mm).
+All two-digit years in the debug data have been changed to four digits.
 
-| Parameter | Scale Factor | Formula |
-|-----------|-------------|---------|
-| All X values | 1.2941 (stretch) | new_x = old_x * 279.4 / 215.9 |
-| All Y values | 0.7727 (squash) | new_y = old_y * 215.9 / 279.4 |
-| Table first_row_y | 0.7727 (squash) | 111.0 to 85.8 |
-| Table row_height | 0.7727 (squash) | 6.0 to 4.6 |
-| Table column X values | 1.2941 (stretch) | Scaled same as field X values |
-| Widths, font sizes | unchanged | Not affected by coordinate system change |
+| Location | Old Value | New Value |
+|----------|-----------|-----------|
+| `employed_start_date` (fill.rs) | "04/15/26" | "04/15/2026" |
+| `employed_first_check_year` (fill.rs) | "26" | "2026" |
+| Table date column (pdf.rs) | "01/{row}/26" | "01/{row}/2026" |
 
-### Sample Rescaled Values
+### Larger Insurance Ellipses
 
-| Field | Old X | New X | Old Y | New Y |
-|-------|-------|-------|-------|-------|
-| case_name | 33.0 | 42.7 | 29.2 | 22.6 |
-| upi_number | 107.0 | 138.5 | 29.2 | 22.6 |
-| signature_top | 30.0 | 38.8 | 72.0 | 55.6 |
-| signature_bottom | 30.0 | 38.8 | 234.0 | 180.8 |
-| table date col | 12.0 | 15.5 | - | - |
-| table time_out col | 207.0 | 267.9 | - | - |
+The debug label text for the three specified insurance options was changed to match the form's printed labels. This naturally increases the ellipse dimensions since the radius is computed from text width.
+
+| Field | Old Label | New Label | Approx Ellipse Width Change |
+|-------|-----------|-----------|---------------------------|
+| employed_insurance_employer_paid | "Employer" (8 chars) | "Employer Paid" (13 chars) | +63% wider |
+| employed_insurance_employee_paid | "Employee" (8 chars) | "Employee Paid" (13 chars) | +63% wider |
+| employed_insurance_both_paid | "Both" (4 chars) | "Both Paid" (9 chars) | +125% wider |
+
+The "None" option was not mentioned and remains unchanged.
+
+### Text Centering
+
+A `center_in_width()` helper function was added to `rztamp/src/pdf.rs`. When a field or table column has a `width` value in `form_offsets.toml`, text is horizontally centered within that width. The centering uses the existing `estimate_text_width()` approximation (Helvetica average character width at 0.5em).
+
+Behavior by field type:
+- **Named fields with width**: Centered.
+- **Table columns with width**: Centered.
+- **Circle-one options (no width)**: Left-aligned from the x position, unchanged.
+- **Text wider than field width**: Falls back to left-aligned.
 
 ### Sample Output
 
-Generated at `secret/calibration_sample.pdf` (100,615 bytes, 112 text fields, 8 circle marks, 5mm green grid, counter-clockwise rotation).
+Generated at `secret/calibration_sample.pdf` (100,661 bytes, 112 text fields, 8 circle marks, 5mm green grid, counter-clockwise rotation).
 
 ---
 
@@ -61,32 +69,23 @@ rm -f secret/calibration_sample.pdf && tools/target/debug/tanf-fill \
 
 To rebuild after code changes, first run `cargo build --manifest-path tools/Cargo.toml`.
 
-The `--grid 5` flag produces a 5mm grid. Use `--grid 10` for coarser resolution or omit `--grid` entirely for a grid-free output. The `--grid-color` flag accepts named colors (green, gray, red, blue, black, magenta, cyan).
-
 ---
 
-## Observations
+## Limitations
 
-The rescaled offsets are a linear proportional adjustment. They will not be pixel-accurate because the original estimates were approximate to begin with. The grid overlay allows the human pilot to read correct form-space coordinates and fine-tune each field position.
-
-Areas likely needing manual attention include the following.
-
-- **Table row spacing.** The row_height scaled from 6.0mm to 4.6mm. If the physical row height on the form does not match this proportion, rows will drift progressively. The 5mm grid makes it straightforward to measure actual row spacing.
-- **Circle-one options.** The pay frequency and insurance option positions were spaced at fixed intervals in the old system. After rescaling, verify that each option label aligns with its corresponding text on the form.
-- **Right-edge columns.** The office_use_only column (x=282.1mm) slightly exceeds the form width (279.4mm). This column is not populated by the applicant and can be ignored or adjusted.
+The text centering uses a rough width approximation (average character width = 0.5 em). Helvetica is a proportional font where character widths vary significantly (for example, "W" is much wider than "i"). For precise centering, a per-character width table would be needed. The current approximation is adequate for calibration but may appear slightly off-center for strings with many narrow or wide characters.
 
 ---
 
 ## Questions for Human Review
 
-1. **Offset accuracy.** Please inspect `secret/calibration_sample.pdf` against the form template. Are the rescaled field positions approximately correct, or do they need wholesale repositioning?
+1. **Centering accuracy.** Please inspect the calibration PDF. Does the text centering appear acceptable, or does it need refinement for specific fields?
 
-2. **Table row height.** Does the rescaled row_height (4.6mm) match the actual row spacing on the form? If not, what value appears correct from the grid?
+2. **Insurance ellipses.** Are the ellipses for "Employer Paid", "Employee Paid", and "Both Paid" now the right size? If any need further adjustment, the ellipse radius formula can be tuned.
 
 ---
 
 ## Notes
 
-- The file header comment in `form_offsets.toml` was updated to describe the landscape coordinate system.
-- The meta section (page_width_mm, page_height_mm) is unchanged because those values describe the physical page, not the form. The code derives form dimensions via `rotation.form_dimensions()`.
+- The human pilot's manual position updates to `form_offsets.toml` (between P6 and P7) were preserved. No coordinate values were changed by the AI agent in this task.
 - The pre-existing dead code warning for the `form` field in the `Secrets` struct persists (from V0.2-M1-P1).

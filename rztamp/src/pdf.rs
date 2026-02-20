@@ -442,9 +442,12 @@ pub fn build_calibration_fields(
             });
         }
 
+        // Center text within the field width when available.
+        let x_mm = center_in_width(offset.x, offset.width, &text, offset.font_size);
+
         text_fields.push(TextField {
             text,
-            x_mm: offset.x,
+            x_mm,
             y_mm: offset.y,
             font_size: offset.font_size,
             color: header_color,
@@ -467,9 +470,10 @@ pub fn build_calibration_fields(
 
             let col = &offsets.table.columns[col_name.as_str()];
             let text = sample_table_text(col_name, row + 1);
+            let x_mm = center_in_width(col.x, col.width, &text, col.font_size);
             text_fields.push(TextField {
                 text,
-                x_mm: col.x,
+                x_mm,
                 y_mm: y,
                 font_size: col.font_size,
                 color,
@@ -486,6 +490,21 @@ fn is_circle_option(name: &str) -> bool {
         || name.starts_with("employed_insurance_")
 }
 
+/// Compute a centered x position within a field width.
+///
+/// If the field has a width and the text fits within it, returns
+/// an x offset that centers the text. Otherwise returns the original
+/// x position (left-aligned).
+fn center_in_width(x: f32, width: Option<f32>, text: &str, font_size: f32) -> f32 {
+    if let Some(w) = width {
+        let text_w = estimate_text_width(text, font_size);
+        if text_w < w {
+            return x + (w - text_w) / 2.0;
+        }
+    }
+    x
+}
+
 /// Estimate text width in mm given text and font size in points.
 /// Rough approximation for Helvetica (average character width ~0.5em).
 fn estimate_text_width(text: &str, font_size: f32) -> f32 {
@@ -497,7 +516,7 @@ fn estimate_text_width(text: &str, font_size: f32) -> f32 {
 /// Generate sample text for a table column and row number.
 fn sample_table_text(column: &str, row: u32) -> String {
     match column {
-        "date" => format!("01/{:02}/26", row),
+        "date" => format!("01/{:02}/2026", row),
         "employer_name_address" => format!("Company {row}, 123 Main St"),
         "how_contact_made" => "Online".to_string(),
         "telephone_fax" => "T".to_string(),

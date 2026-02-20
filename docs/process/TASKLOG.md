@@ -8,31 +8,32 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.2 Offset Rescaling (V0.2-M1-P6)
+**Name**: V0.2 Debug Data and Text Centering (V0.2-M1-P7)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
-- [x] Revise field offsets.
-- [x] Sample output placed in `secret/`.
-- [x] Manual calibration command included.
+- [x] Debug printing data revised as specified.
+- [x] PDF export tool revised as specified.
+- [x] Latest calibration test exported.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.2-M1-P6-T1 | Rescale form_offsets.toml coordinates | Complete | All X values multiplied by 279.4/215.9 (1.2941 stretch). All Y values multiplied by 215.9/279.4 (0.7727 squash). Table first_row_y and row_height scaled by Y factor. Table column X values scaled by X factor. Widths and font sizes unchanged. |
-| V0.2-M1-P6-T2 | Generate calibration sample | Complete | `secret/calibration_sample.pdf` (100,615 bytes). 5mm grid, green, CCW rotation. 112 text fields, 8 circle marks. |
-| V0.2-M1-P6-T3 | Update documentation and commit | Complete | TASKLOG, REVERSE_PROMPT updated. Manual calibration command included. |
+| V0.2-M1-P7-T1 | Fix four-digit years in debug data | Complete | `employed_start_date` changed to "04/15/2026", `employed_first_check_year` to "2026", table date column to "01/{row}/2026" format. Insurance debug labels changed to "Employer Paid", "Employee Paid", "Both Paid" for larger ellipses. |
+| V0.2-M1-P7-T2 | Add text centering in calibration fields | Complete | `center_in_width()` helper added to rztamp::pdf. Centers text within field width when width is available. Applied to both named fields and table columns. Circle-one options (no width) remain left-aligned. |
+| V0.2-M1-P7-T3 | Generate calibration sample | Complete | `secret/calibration_sample.pdf` (100,661 bytes). 5mm grid, green, CCW rotation. 112 text fields, 8 circle marks. |
+| V0.2-M1-P7-T4 | Update documentation and commit | Complete | TASKLOG, REVERSE_PROMPT updated. |
 
 ## Notes
 
-- Scaling factors: X stretch = 279.4 / 215.9 = 1.2941, Y squash = 215.9 / 279.4 = 0.7727.
-- The rescaling is a linear proportional adjustment. The human pilot will need to manually fine-tune offsets using the grid overlay.
-- The office_use_only column X (282.1mm) slightly exceeds the form width (279.4mm) because the original value (218.0mm) was slightly beyond the old coordinate range (215.9mm). This column is not populated.
-- Table row_height scaled from 6.0mm to 4.6mm. This may need manual adjustment since row spacing depends on the physical form layout.
-- Previous notes on text rotation angles, bezier circles, printpdf API, and form dimensions remain valid.
+- Text centering uses `estimate_text_width()` (Helvetica average character width approximation at 0.5em). This is a rough estimate. For precise centering, per-character width tables would be needed.
+- The `center_in_width()` function falls back to left-aligned positioning when text is wider than the field or when no width is specified.
+- Insurance ellipses are now sized based on "Employer Paid" (13 chars), "Employee Paid" (13 chars), and "Both Paid" (9 chars) rather than the previous short labels (8, 8, 4 chars).
+- The human pilot manually updated form_offsets.toml positions between P6 and P7. Those values are preserved.
+- Previous notes on printpdf API, form dimensions, and coordinate system remain valid.
 
 ## History
 
@@ -48,3 +49,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.2-M1-P4: Grid overlay. --grid and --grid-color flags, GridConfig, build_grid_ops(). Form-space grid lines with labels for calibration. |
 | 2026-02-19 | V0.2-M1-P5: Form dimension fix. For 90-degree rotations, form dimensions are swapped (landscape form in portrait page). Eliminated non-uniform scaling. Square grid cells. |
 | 2026-02-19 | V0.2-M1-P6: Offset rescaling. All X/Y values in form_offsets.toml rescaled from portrait to landscape coordinate system. X stretched by 1.2941, Y squashed by 0.7727. |
+| 2026-02-19 | V0.2-M1-P7: Debug data fixes and text centering. Four-digit years, larger insurance ellipses, text centered within field widths. |

@@ -24,65 +24,65 @@ template_dpi = 200
 # --- Header Fields (secret values from secrets.toml) ---
 
 [fields.case_name]
-x = 42.7
-y = 22.6
-width = 70.0
+x = 30.0
+y = 33.5
+width = 60.0
 font_size = 10
 
 [fields.upi_number]
-x = 138.5
-y = 22.6
-width = 40.0
+x = 120.0
+y = 33.5
+width = 35.0
 font_size = 10
 
 [fields.job_search_from]
-x = 117.8
-y = 31.4
-width = 25.0
+x = 94.0
+y = 53.0
+width = 20.0
 font_size = 10
 
 [fields.job_search_to]
-x = 155.3
-y = 31.4
-width = 25.0
+x = 116.5
+y = 53.0
+width = 20.0
 font_size = 10
 
 [fields.job_search_hours]
-x = 191.5
-y = 31.4
+x = 141.0
+y = 53.0
 width = 15.0
 font_size = 10
 
 [fields.submission_deadline_time]
-x = 115.2
-y = 34.4
+x = 71.0
+y = 57.5
 width = 20.0
 font_size = 10
 
 [fields.submission_deadline_date]
-x = 148.8
-y = 34.4
+x = 93.0
+y = 57.5
 width = 25.0
 font_size = 10
 
 [fields.submission_location]
-x = 185.1
-y = 34.4
+x = 115.0
+y = 57.5
 width = 30.0
 font_size = 10
 
 # --- Participant's Signature (Above Job Search Table) ---
 
 [fields.participant_signature_top]
-x = 38.8
-y = 55.6
+x = 5.0
+y = 75.0
 width = 80.0
 font_size = 10
 
 [fields.participant_signature_top_date]
-x = 155.3
-y = 55.6
-width = 30.0
+x = 90.0
+y = 75.0
+width = 35.0
 font_size = 10
 
 # --- Job Application Table ---
@@ -93,52 +93,52 @@ font_size = 10
 # Row y positions are calculated as: table_first_row_y + (row - 1) * row_height.
 
 [table]
-first_row_y = 85.8
-row_height = 4.6
+first_row_y = 102.2
+row_height = 4.15
 row_count = 10
 
 [table.columns.date]
-x = 15.5
+x = 5.5
 width = 20.0
 font_size = 9
 
 [table.columns.employer_name_address]
-x = 54.4
+x = 36.5
 width = 68.0
 font_size = 9
 
 [table.columns.how_contact_made]
-x = 145.0
+x = 115.0
 width = 18.0
 font_size = 9
 
 [table.columns.telephone_fax]
-x = 170.8
+x = 145.0
 width = 16.0
 font_size = 9
 
 [table.columns.telephone_number]
-x = 194.1
+x = 165.0
 width = 28.0
 font_size = 8
 
 [table.columns.internet_confirmation]
-x = 232.9
+x = 205.0
 width = 14.0
 font_size = 9
 
 [table.columns.time_in]
-x = 253.6
+x = 227.5
 width = 10.0
 font_size = 9
 
 [table.columns.time_out]
-x = 267.9
+x = 242.5
 width = 10.0
 font_size = 9
 
 [table.columns.office_use_only]
-x = 282.1
+x = 257.5
 width = 0.0
 font_size = 9
 # Note: Office Use Only column is at the right edge. Not populated by the applicant.
@@ -146,132 +146,132 @@ font_size = 9
 # --- "Should you become employed" Section ---
 
 [fields.employed_name_address_line1]
-x = 15.5
-y = 136.8
+x = 5.0
+y = 152.5
 width = 80.0
 font_size = 9
 
 [fields.employed_name_address_line2]
-x = 15.5
-y = 140.6
+x = 5.0
+y = 157.0
 width = 80.0
 font_size = 9
 
 [fields.employed_name_address_line3]
-x = 15.5
-y = 144.5
+x = 5.0
+y = 162.0
 width = 80.0
 font_size = 9
 
 [fields.employed_telephone]
-x = 15.5
-y = 148.4
+x = 55.0
+y = 162.0
 width = 80.0
 font_size = 9
 
 [fields.employed_start_date]
-x = 139.8
-y = 136.8
+x = 107.0
+y = 147.5
 width = 25.0
 font_size = 9
 
 [fields.employed_hours_per_week]
-x = 194.1
-y = 136.8
+x = 180.0
+y = 147.5
 width = 20.0
 font_size = 9
 
 [fields.employed_hourly_rate]
-x = 239.4
-y = 136.8
+x = 224.0
+y = 147.5
 width = 20.0
 font_size = 9
 
 # How often paid: one of "Weekly", "Bi-weekly", "Semi-monthly", "Monthly".
 # These are circle-one options. The x,y positions mark the center of each option.
 [fields.employed_pay_frequency_weekly]
-x = 152.7
-y = 140.6
+x = 136.0
+y = 151.0
 font_size = 9
 
 [fields.employed_pay_frequency_biweekly]
-x = 174.7
-y = 140.6
+x = 153.0
+y = 151.0
 font_size = 9
 
 [fields.employed_pay_frequency_semimonthly]
-x = 201.9
-y = 140.6
+x = 174.0
+y = 151.0
 font_size = 9
 
 [fields.employed_pay_frequency_monthly]
-x = 232.9
-y = 140.6
+x = 202.0
+y = 151.0
 font_size = 9
 
 # Date of first check: three fields (month / day / year).
 [fields.employed_first_check_month]
-x = 152.7
-y = 144.5
+x = 116.0
+y = 156.5
 width = 10.0
 font_size = 9
 
 [fields.employed_first_check_day]
-x = 168.2
-y = 144.5
+x = 122.0
+y = 156.5
 width = 10.0
 font_size = 9
 
 [fields.employed_first_check_year]
-x = 183.8
-y = 144.5
+x = 128.0
+y = 156.5
 width = 10.0
 font_size = 9
 
 [fields.employed_tips]
-x = 200.6
-y = 144.5
+x = 151.0
+y = 156.5
 width = 15.0
 font_size = 9
 
 [fields.employed_job_title]
-x = 230.4
-y = 144.5
+x = 209.0
+y = 156.5
 width = 30.0
 font_size = 9
 
 # Insurance: one of "None", "Employer Paid", "Employee Paid", "Both Paid".
 # Circle-one options.
 [fields.employed_insurance_none]
-x = 152.7
-y = 148.4
+x = 127.5
+y = 160.0
 font_size = 9
 
 [fields.employed_insurance_employer_paid]
-x = 178.6
-y = 148.4
+x = 142.0
+y = 160.0
 font_size = 9
 
 [fields.employed_insurance_employee_paid]
-x = 209.6
-y = 148.4
+x = 171.0
+y = 160.0
 font_size = 9
 
 [fields.employed_insurance_both_paid]
-x = 240.7
-y = 148.4
+x = 200.0
+y = 160.0
 font_size = 9
 
 # --- Participant's Signature (Bottom of Form) ---
 
 [fields.participant_signature_bottom]
-x = 38.8
-y = 180.8
+x = 5.0
+y = 174.0
 width = 80.0
 font_size = 10
 
 [fields.participant_signature_bottom_date]
-x = 168.2
-y = 180.8
+x = 130.0
+y = 174.0
 width = 30.0
 font_size = 10

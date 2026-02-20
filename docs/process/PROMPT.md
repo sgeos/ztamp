@@ -12,21 +12,30 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 Answers to questions in the reverse prompt.
 
-1. Grid cells appear to be square.
-   Dimensions appear to be about 279 or 280 and 211 or 212.
-2. I think it would make sesne to stretch X offsets,
-   and squash Y offsets according to the new coordinate system.
-   I think it will have to manually adjust from there.
+1. Positions manually updated.
+2. Positions manually updated.
+
+Everything is roughly in the right place, however a few adjustments are needed.
+
+- Years should be four digits. 2026, not 26.
+- The following ellipses should be larger.
+  - Employer Paid
+  - Employee Paid
+  - Both Paid
+- Ellipse labels like "Weekly" are not needed in production, but they are helpful for debugging.
+
+Is it possible to center text in fields?
+If so, I would like to center text.
 
 ## Objectives
 
-### Revise Field Offsets
+### Revise Debug Printing Data
 
-Revise field offsets.
-According to the new coordinate system:
+Revise debug printing data for PDF calibration as specified.
 
-- Stretch X offsets.
-- Squash Y offsets.
+### Centered Textfields
+
+Center text in fields if possible.
 
 ### Repeat Calibaration Test
 
@@ -43,9 +52,9 @@ It is OK to use the same filename.
 
 ## Success Criteria
 
-- Revise field offsets.
-- Sample output placed in `secret`.
-- Include the command to manually run to tool for a manual calibration loop.
+- Debug printing data revised as specified.
+- PDF export tool revised as specified.
+- Latest calibration test exported.
 
 ## Notes
 
