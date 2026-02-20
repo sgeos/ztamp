@@ -346,7 +346,7 @@ fn build_value_map(secrets: &Secrets) -> HashMap<String, String> {
     map.insert("employed_name_address_line2".to_string(), "123 Employment Ave".to_string());
     map.insert("employed_name_address_line3".to_string(), "Las Vegas, NV 89101".to_string());
     map.insert("employed_telephone".to_string(), "702-555-0100".to_string());
-    map.insert("employed_start_date".to_string(), "04/15/2026".to_string());
+    map.insert("employed_start_date".to_string(), "04/15/2001".to_string());
     map.insert("employed_hours_per_week".to_string(), "40".to_string());
     map.insert("employed_hourly_rate".to_string(), "$15.00".to_string());
 
@@ -359,7 +359,7 @@ fn build_value_map(secrets: &Secrets) -> HashMap<String, String> {
     // Date of first check.
     map.insert("employed_first_check_month".to_string(), "05".to_string());
     map.insert("employed_first_check_day".to_string(), "01".to_string());
-    map.insert("employed_first_check_year".to_string(), "2026".to_string());
+    map.insert("employed_first_check_year".to_string(), "2001".to_string());
 
     map.insert("employed_tips".to_string(), "No".to_string());
     map.insert("employed_job_title".to_string(), "Analyst".to_string());

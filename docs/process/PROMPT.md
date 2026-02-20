@@ -12,14 +12,9 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 Answers to questions in the reverse prompt.
 
-1. Black text is acceptable.
+1. PoC largely good. Need some minor adjustments.
 
 ## Objectives
-
-### Update Export Tool
-
-The export tool should have a `--labels` flag.
-Without it, ellipse labels are not printed.
 
 ### Black Text PoC
 
@@ -29,6 +24,7 @@ Please generate a PoC with the following properties.
 - All text is black.
 - No ellipse labels.
 - Signature dates are "01/01/2001"
+- If employed start date and first check years are 2001.
 
 ### Repeat Calibaration Test
 
@@ -45,8 +41,7 @@ It is OK to use the same filename.
 
 ## Success Criteria
 
-- Tool and test data updated as specified.
-- Black text and no grid for PoC.
+- If employed dates modifed.
 - Latest calibration test exported.
 
 ## Notes

@@ -9,32 +9,24 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.2-M1-P11 Labels Flag and PoC Update
+**Task**: V0.2-M1-P12 Employment Date Fix
 
 ---
 
 ## Verification
 
-### --labels Flag (tools/src/fill.rs)
+### Debug Data Changes (tools/src/fill.rs)
 
-A `--labels` boolean flag was added to the tanf-fill CLI. It controls whether text labels are rendered inside circle-one option ellipses.
+| Field | Old Value | New Value |
+|-------|-----------|-----------|
+| employed_start_date | "04/15/2026" | "04/15/2001" |
+| employed_first_check_year | "2026" | "2001" |
 
-| Flag | Circle Labels | Ellipses |
-|------|--------------|----------|
-| Omitted (default) | Hidden | Drawn |
-| `--labels` | Shown | Drawn |
-
-The flag has no effect on non-circle fields. All other text fields are always rendered.
-
-### Signature Date Placeholders
-
-The placeholder text for signature date fields was changed from "DATE" to "01/01/2001".
+All other debug values are unchanged. The first check month ("05") and day ("01") remain as before, giving a first check date of 05/01/2001.
 
 ### Sample Output
 
-Generated at `secret/calibration_sample.pdf` (89,763 bytes, 104 text fields, 8 circle marks, no grid, black text, no labels, counter-clockwise rotation).
-
-The text field count dropped from 112 to 104 because the 8 circle-one option labels (4 pay frequency options + 4 insurance options) are now suppressed without `--labels`.
+Generated at `secret/calibration_sample.pdf` (89,524 bytes, 104 text fields, 8 circle marks, no grid, black text, no labels, counter-clockwise rotation).
 
 ---
 
@@ -71,11 +63,10 @@ To rebuild after code changes, first run `cargo build --manifest-path tools/Carg
 
 ## Questions for Human Review
 
-1. **PoC quality.** Does the output with black text, no grid, no circle labels, and "01/01/2001" signature dates look acceptable? Are further adjustments needed before moving toward production use?
+1. **PoC quality.** Does the output with the 2001 employment dates look correct? Is this ready to move toward production integration, or are further calibration adjustments needed?
 
 ---
 
 ## Notes
 
-- The `--labels` flag is independent of `--text-color` and `--grid`. All three can be combined in any way.
 - The pre-existing dead code warning for the `form` field in the `Secrets` struct persists (from V0.2-M1-P1).
