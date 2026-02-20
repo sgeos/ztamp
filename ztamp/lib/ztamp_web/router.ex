@@ -19,6 +19,8 @@ defmodule ZtampWeb.Router do
 
     get "/", PageController, :home
     live "/job-search", JobSearchLive
+    get "/screenshots/:filename", ScreenshotController, :show
+    get "/browser-landing", LandingController, :index
   end
 
   # Other scopes may use custom stacks.

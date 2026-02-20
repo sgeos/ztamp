@@ -8,31 +8,42 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.4 Screenshot Testing and Polish (V0.4-M1-P2)
+**Name**: V0.4 UI Improvements and Schema Migration (V0.4-M1-P3)
 **Status**: Complete
 **Started**: 2026-02-20
 
 ## Success Criteria
 
-- [x] Test ChromeDriver installation and screenshot functionality.
-- [x] Update ztamp `README.md`.
-- [x] Comment on anything the human pilot needs to do to manually verify.
+- [x] V0.4 merged into main.
+- [x] Update database schema as requested.
+- [x] Update job search dashboard as requested.
+  - [x] Job search fields.
+  - [x] Captured entries.
+  - [x] Detailed entry modification dialog.
+- [x] Document installation and startup instructions in relevant READMEs.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.4-M1-P2-T1 | Test ChromeDriver installation | Complete | ChromeDriver v145.0.7632.77 matches Chrome v145.0.7632.77. Wallaby starts Chrome session, captures screenshot (13,189 bytes), saves to `secret/screenshots/`. |
-| V0.4-M1-P2-T2 | Test screenshot end-to-end | Complete | `Wallaby.start_session()`, `Wallaby.Browser.take_screenshot()`, file verified on disk. Full pipeline works. |
-| V0.4-M1-P2-T3 | Update time fields to local time | Complete | `time_in` autopopulates with current local time. `time_out` has "Use submission time" checkbox (checked by default). When checked, field is disabled and time_out is set to local time at submission. When unchecked, manual entry is allowed. |
-| V0.4-M1-P2-T4 | Update ztamp README.md | Complete | Added ChromeDriver dependency, `mix ecto.create` and `mix ecto.migrate` instructions. |
+| V0.4-M1-P3-T1 | Merge V0.4 into main | Complete | `feat/v04-screenshot-capture` fast-forwarded into `main`. New branch `feat/v05-ui-improvements` created. |
+| V0.4-M1-P3-T2 | Database migration | Complete | `employer_name_address` split into `employer_name` and `employer_address`. Added `applied_via_recruiter` and `remote` boolean columns. Existing 23 entries preserved. Reversible `down` function with formatting rules. |
+| V0.4-M1-P3-T3 | Screenshot controller | Complete | `ScreenshotController` serves PNGs from `secret/screenshots/` with path traversal protection. Route at `/screenshots/:filename`. |
+| V0.4-M1-P3-T4 | Landing page | Complete | `LandingController` serves browser landing page at `/browser-landing` with links to LinkedIn Jobs, Indeed, and Glassdoor. BrowserServer navigates to landing page on session start. |
+| V0.4-M1-P3-T5 | Modal component | Complete | `.modal` added to CoreComponents using daisyUI modal classes. Show/hide via `modal-open` class. Close button and backdrop click. |
+| V0.4-M1-P3-T6 | Form changes | Complete | Employer Name/Address split with "Applied via Recruiter", "United States", and "Remote" checkboxes. "How Contact Made" defaults to "Online". T/F/E/O selector with "Online Application" default. |
+| V0.4-M1-P3-T7 | Date filtering | Complete | From/To date inputs with "To present" checkbox. Entry count and cumulative time badges. |
+| V0.4-M1-P3-T8 | Entry detail modal | Complete | View/edit/delete modal with screenshot thumbnail. Click thumbnail opens full size in new tab. Edit form includes all fields. Delete with confirmation. |
+| V0.4-M1-P3-T9 | Disabled Export PDF button | Complete | Disabled "Export PDF" button in captured entries header area. Placeholder for future functionality. |
+| V0.4-M1-P3-T10 | README documentation | Complete | Created top-level `README.md` and `rztamp/README.md`. Updated `ztamp/README.md` with Rust prerequisite, workflow description, and screenshot route. |
 
 ## Notes
 
-- ChromeDriver v145.0.7632.77 is installed at `/Users/bsechter/bin/chromedriver` and matches Chrome v145.0.7632.77.
-- The ChromeDriver blocker from V0.4-M1-P1 is resolved.
-- Local time is obtained via `:calendar.local_time()` which uses the system timezone.
-- The "Use submission time" checkbox toggles `time_out` between disabled (auto-populated at submission) and enabled (manual entry).
+- Existing 23 entries have `employer_name` populated from the old `employer_name_address` column. `employer_address` is empty string for these entries. `applied_via_recruiter` and `remote` default to false.
+- The edit modal includes "Internet" in the How Contact Made dropdown for backward compatibility with existing entries. New entries default to "Online".
+- Cumulative time is computed client-side from the `time_in` and `time_out` strings in `H:MM` format.
+- The "United States" checkbox disables the address field and injects "United States" at submission time.
+- The "Remote" checkbox sets the `remote` boolean field on the entry.
 
 ## History
 
@@ -52,3 +63,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.3-M1-P1: V0.2 merged to main. PDF concatenation tool created. Four PoCs concatenated. |
 | 2026-02-20 | V0.4-M1-P1: V0.3 merged to main. Screenshot capture workflow with Wallaby, LiveView, and PostgreSQL. |
 | 2026-02-20 | V0.4-M1-P2: ChromeDriver tested. Local time for form defaults. Submission time checkbox for time_out. README updated. |
+| 2026-02-20 | V0.4-M1-P3: V0.4 merged to main. Schema migration, form improvements, date filtering, entry modal, screenshot serving, browser landing page, README documentation. |

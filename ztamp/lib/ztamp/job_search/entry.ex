@@ -12,7 +12,10 @@ defmodule Ztamp.JobSearch.Entry do
 
   schema "job_search_entries" do
     field :date, :date
-    field :employer_name_address, :string
+    field :employer_name, :string
+    field :employer_address, :string
+    field :applied_via_recruiter, :boolean, default: false
+    field :remote, :boolean, default: false
     field :how_contact_made, :string
     field :telephone_fax, :string
     field :telephone_number, :string
@@ -24,17 +27,18 @@ defmodule Ztamp.JobSearch.Entry do
     timestamps(type: :utc_datetime)
   end
 
-  @required_fields ~w(date employer_name_address how_contact_made
+  @required_fields ~w(date employer_name employer_address how_contact_made
                       time_in time_out screenshot_path)a
-  @optional_fields ~w(telephone_fax telephone_number internet_confirmation)a
+  @optional_fields ~w(telephone_fax telephone_number internet_confirmation
+                      applied_via_recruiter remote)a
 
   @doc "Build a changeset for an entry, validating required fields and constraints."
   def changeset(entry, attrs) do
     entry
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:telephone_fax, ~w(T F E),
-      message: "must be T (Telephone), F (Fax), or E (Email)"
+    |> validate_inclusion(:telephone_fax, ~w(T F E O),
+      message: "must be T (Telephone), F (Fax), E (Email), or O (Online Application)"
     )
   end
 end

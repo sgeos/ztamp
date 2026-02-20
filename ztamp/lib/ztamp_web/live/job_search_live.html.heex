@@ -38,26 +38,72 @@
   <.form for={@form} phx-change="validate" phx-submit="take_screenshot">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <.input field={@form[:date]} type="date" label="Date" required />
-      <.input
-        field={@form[:employer_name_address]}
-        type="text"
-        label="Employer Name & Address"
-        required
-      />
+
+      <%!-- Employer Name with Recruiter checkbox --%>
+      <div>
+        <.input field={@form[:employer_name]} type="text" label="Employer Name" required />
+        <label class="flex items-center gap-2 mt-1 cursor-pointer">
+          <input
+            type="checkbox"
+            name="entry[applied_via_recruiter]"
+            value="true"
+            class="checkbox checkbox-sm"
+          />
+          <span class="text-sm">Applied via recruiter</span>
+        </label>
+      </div>
+
+      <%!-- Employer Address with United States and Remote checkboxes --%>
+      <div>
+        <.input
+          field={@form[:employer_address]}
+          type="text"
+          label="Employer Address"
+          required
+          disabled={@united_states}
+        />
+        <div class="flex gap-4 mt-1">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={@united_states}
+              phx-click="toggle_united_states"
+              value="true"
+              class="checkbox checkbox-sm"
+            />
+            <span class="text-sm">United States</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={@remote}
+              phx-click="toggle_remote"
+              name="entry[remote]"
+              value="true"
+              class="checkbox checkbox-sm"
+            />
+            <span class="text-sm">Remote</span>
+          </label>
+        </div>
+      </div>
+
       <.input
         field={@form[:how_contact_made]}
         type="select"
         label="How Contact Made"
-        options={["Internet", "In Person", "Phone", "Fax", "Email"]}
-        prompt="Select method..."
+        options={["Online", "In Person", "Phone", "Fax", "Email"]}
         required
       />
       <.input
         field={@form[:telephone_fax]}
         type="select"
-        label="T/F/E"
-        options={[{"Telephone", "T"}, {"Fax", "F"}, {"Email", "E"}]}
-        prompt="Select..."
+        label="T/F/E/O"
+        options={[
+          {"Online Application", "O"},
+          {"Telephone", "T"},
+          {"Fax", "F"},
+          {"Email", "E"}
+        ]}
       />
       <.input field={@form[:telephone_number]} type="tel" label="Phone/Fax Number" />
       <.input
@@ -94,19 +140,145 @@
     </div>
   </.form>
 
-  <%!-- Entries Table --%>
+  <%!-- Date Filter --%>
+  <div class="card bg-base-200 p-4">
+    <h2 class="text-md font-semibold mb-2">Filter Entries</h2>
+    <form phx-change="filter_entries" class="flex items-end gap-4 flex-wrap">
+      <div>
+        <label class="label mb-1">From Date</label>
+        <input type="date" name="from" value={@filter_from} class="input" />
+      </div>
+      <div>
+        <div>
+          <label class="label mb-1">To Date</label>
+          <input
+            type="date"
+            name="to"
+            value={@filter_to}
+            class="input"
+            disabled={@to_present}
+          />
+        </div>
+        <label class="flex items-center gap-2 mt-1 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={@to_present}
+            phx-click="toggle_to_present"
+            value="true"
+            class="checkbox checkbox-sm"
+          />
+          <span class="text-sm">To present</span>
+        </label>
+      </div>
+      <div class="flex gap-2">
+        <div class="badge badge-neutral">{length(@entries)} entries</div>
+        <div class="badge badge-neutral">{@cumulative_time}</div>
+      </div>
+    </form>
+  </div>
+
+  <%!-- Captured Entries --%>
   <div>
-    <h2 class="text-md font-semibold mb-2">Captured Entries</h2>
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-md font-semibold">Captured Entries</h2>
+      <.button disabled>Export PDF</.button>
+    </div>
     <.table :if={@entries != []} id="entries" rows={@entries}>
       <:col :let={entry} label="Date">{entry.date}</:col>
-      <:col :let={entry} label="Employer">{entry.employer_name_address}</:col>
+      <:col :let={entry} label="Employer">{entry.employer_name}</:col>
       <:col :let={entry} label="Contact">{entry.how_contact_made}</:col>
-      <:col :let={entry} label="T/F/E">{entry.telephone_fax}</:col>
+      <:col :let={entry} label="T/F/E/O">{entry.telephone_fax}</:col>
       <:col :let={entry} label="Confirmation">{entry.internet_confirmation}</:col>
       <:col :let={entry} label="Screenshot">
         <span :if={entry.screenshot_path} class="badge badge-success badge-sm">Captured</span>
       </:col>
+      <:action :let={entry}>
+        <button phx-click="show_entry" phx-value-id={entry.id} class="link link-primary text-sm">
+          View
+        </button>
+      </:action>
     </.table>
     <p :if={@entries == []} class="text-base-content/50 text-sm">No entries yet.</p>
   </div>
 </div>
+
+<%!-- Entry Detail Modal --%>
+<.modal id="entry-modal" show={@show_entry_modal} on_cancel={JS.push("close_entry_modal")}>
+  <div :if={@selected_entry}>
+    <h3 class="font-bold text-lg mb-4">Entry Detail</h3>
+
+    <div :if={@selected_entry.screenshot_path} class="mb-4">
+      <a
+        href={~p"/screenshots/#{Path.basename(@selected_entry.screenshot_path)}"}
+        target="_blank"
+        rel="noopener"
+      >
+        <img
+          src={~p"/screenshots/#{Path.basename(@selected_entry.screenshot_path)}"}
+          alt="Screenshot"
+          class="max-h-48 rounded border cursor-pointer hover:opacity-80"
+        />
+      </a>
+      <p class="text-xs text-base-content/50 mt-1">Click to open full size in new tab</p>
+    </div>
+
+    <.form for={@edit_form} phx-change="validate_edit" phx-submit="save_edit">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <.input field={@edit_form[:date]} type="date" label="Date" required />
+        <.input field={@edit_form[:employer_name]} type="text" label="Employer Name" required />
+        <.input
+          field={@edit_form[:employer_address]}
+          type="text"
+          label="Employer Address"
+          required
+        />
+        <.input
+          field={@edit_form[:applied_via_recruiter]}
+          type="checkbox"
+          label="Applied via Recruiter"
+        />
+        <.input field={@edit_form[:remote]} type="checkbox" label="Remote" />
+        <.input
+          field={@edit_form[:how_contact_made]}
+          type="select"
+          label="How Contact Made"
+          options={["Online", "In Person", "Phone", "Fax", "Email", "Internet"]}
+          required
+        />
+        <.input
+          field={@edit_form[:telephone_fax]}
+          type="select"
+          label="T/F/E/O"
+          options={[
+            {"Online Application", "O"},
+            {"Telephone", "T"},
+            {"Fax", "F"},
+            {"Email", "E"}
+          ]}
+          prompt="Select..."
+        />
+        <.input field={@edit_form[:telephone_number]} type="tel" label="Phone/Fax Number" />
+        <.input
+          field={@edit_form[:internet_confirmation]}
+          type="text"
+          label="Internet Confirmation #"
+        />
+        <.input field={@edit_form[:time_in]} type="text" label="Time In" />
+        <.input field={@edit_form[:time_out]} type="text" label="Time Out" />
+      </div>
+
+      <div class="flex gap-2 pt-4 justify-between">
+        <.button type="submit" variant="primary">Save Changes</.button>
+        <.button
+          type="button"
+          phx-click="delete_entry"
+          phx-value-id={@selected_entry.id}
+          class="btn btn-error"
+          data-confirm="Are you sure you want to delete this entry?"
+        >
+          Delete Entry
+        </.button>
+      </div>
+    </.form>
+  </div>
+</.modal>

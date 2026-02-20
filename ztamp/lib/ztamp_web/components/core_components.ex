@@ -445,6 +445,44 @@ defmodule ZtampWeb.CoreComponents do
     """
   end
 
+  @doc """
+  Renders a modal dialog using daisyUI modal classes.
+
+  The modal is shown when the `show` assign is true and hidden otherwise.
+  The `on_cancel` JS command is executed when the close button or backdrop
+  is clicked.
+
+  ## Examples
+
+      <.modal id="my-modal" show={@show_modal} on_cancel={JS.push("close_modal")}>
+        <p>Modal content</p>
+      </.modal>
+  """
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false
+  attr :on_cancel, JS, default: %JS{}
+
+  slot :inner_block, required: true
+
+  def modal(assigns) do
+    ~H"""
+    <div id={@id} class={["modal", @show && "modal-open"]}>
+      <div id={"#{@id}-content"} class="modal-box max-w-2xl relative" role="dialog" aria-modal="true">
+        <button
+          type="button"
+          class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          phx-click={@on_cancel}
+          aria-label="close"
+        >
+          <.icon name="hero-x-mark" class="size-5" />
+        </button>
+        {render_slot(@inner_block)}
+      </div>
+      <div class="modal-backdrop" phx-click={@on_cancel}></div>
+    </div>
+    """
+  end
+
   ## JS Commands
 
   def show(js \\ %JS{}, selector) do

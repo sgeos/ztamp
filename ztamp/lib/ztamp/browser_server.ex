@@ -57,6 +57,7 @@ defmodule Ztamp.BrowserServer do
         case Wallaby.start_session() do
           {:ok, session} ->
             Logger.info("BrowserServer: Chrome session started")
+            session = navigate_to_landing(session)
             {:reply, {:ok, :started}, %{state | session: session}}
 
           {:error, reason} ->
@@ -129,6 +130,18 @@ defmodule Ztamp.BrowserServer do
     case Application.ensure_all_started(:wallaby) do
       {:ok, _} -> :ok
       {:error, {app, reason}} -> {:error, "Failed to start #{app}: #{inspect(reason)}"}
+    end
+  end
+
+  @landing_url "http://localhost:4000/browser-landing"
+
+  defp navigate_to_landing(session) do
+    try do
+      Wallaby.Browser.visit(session, @landing_url)
+    rescue
+      _ ->
+        Logger.warning("BrowserServer: Could not navigate to landing page")
+        session
     end
   end
 

@@ -12,26 +12,73 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 Answers to questions in the reverse prompt.
 
-1. I am pretty sure Chromedriver has been installed.
-2. Form time_in should autopopulate with the current local time.
-   time_out should have a checkmark that checked by default "use submisssion time."
-   - If checked, the field is greyed out and not selectable.
-   - If unchecked, a time can be entered manually.
-   - Either way, use local time.
-3. Screenshots need to be tested before V0.4 is complete.
+1. Manual verification complete.
+2. V0.4 can be complete.
+
+I used the system to apply for 23 jobs with screenshots taken.
+I want a few changes.
+
+After this prompt, the goal is to implement PDF export using
+the application data I collected as a PoC for the process.
 
 ## Objectives
 
-### Test Chromedriver Installation and Screenshot Functionality.
+### Merge V0.4 into Master
 
-Test Chromedriver installation and screenshot functionality.
+Merge V0.4 into Master
 
-### Update ztamp README.md
+### Update Job Search Dashboard
 
-Update ztamp `README.md` to note the following.
+The following should be selected by default:
 
-- Chromedriver dependency.
-- `mix ecto.create` and `mix ecto.migrate` need to be run.
+- How Contact Made: Online
+- T/F/E/O: Online Application (modify to add this option)
+
+Employer Name & Address should be split into:
+
+- Employer Name
+- Employer Address
+
+Next to employer name, there should be a checkmark for:
+
+- Applied via Recruiter
+
+Next to addres, there should be two checkmarks for:
+
+- United States (greys out address if selected and submits "United States" as the address)
+- Remote
+
+Database needs to be modified to accomodate these changes.
+
+#### Update Captured Entries
+
+Captured entries should have:
+
+- From date
+- To date
+- Checkmark for "To Present"
+- List the total number of applications
+
+Only applications in the range should be listed and counted towards to total
+
+#### Detailed Entry Display and Modification
+
+There should be a link for each entries that brings up a dialog to:
+
+- See complete details, and
+- Modify details, and
+- Optionally delete the entry
+
+All database fields should be listed in this dialog,
+and a small version of the captured screenshot should be displayed.
+Clicking on the screenshot should open a full sized version in another browser tab.
+
+### Document All Installation and Startup Instructions
+
+Update the ztamp and rztamp `README.md` files to note all project
+and subproject relevant setup and startup instructions.
+Update the top level readme to point to the project specific readmes
+with a short note about setup and startup instructions.
 
 ## Context
 
@@ -43,9 +90,13 @@ Update ztamp `README.md` to note the following.
 
 ## Success Criteria
 
-- Test Chromedriver installation and screenshot functionality.
-- Update ztamp `README.md`.
-- Comment on anything I need to do to manually verify.
+- V0.4 merged into Master.
+- Update database schema as requested.
+- Update job search dashboard as requested.
+  - Job search fields.
+  - Captured entries.
+  - Detailed entry modification dialog.
+- Document installation and startup instructions in relevant readmes.
 
 ## Notes
 

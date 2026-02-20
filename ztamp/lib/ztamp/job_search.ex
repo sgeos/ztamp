@@ -17,6 +17,25 @@ defmodule Ztamp.JobSearch do
     |> Repo.all()
   end
 
+  @doc """
+  List entries within a date range, most recent first.
+
+  Either boundary may be nil to leave that side unbounded.
+  """
+  def list_entries_in_range(from_date, to_date) do
+    Entry
+    |> order_by([e], desc: e.inserted_at)
+    |> maybe_filter_from(from_date)
+    |> maybe_filter_to(to_date)
+    |> Repo.all()
+  end
+
+  defp maybe_filter_from(query, nil), do: query
+  defp maybe_filter_from(query, date), do: where(query, [e], e.date >= ^date)
+
+  defp maybe_filter_to(query, nil), do: query
+  defp maybe_filter_to(query, date), do: where(query, [e], e.date <= ^date)
+
   @doc "Get a single entry by ID. Raises if not found."
   def get_entry!(id), do: Repo.get!(Entry, id)
 
@@ -32,6 +51,11 @@ defmodule Ztamp.JobSearch do
     entry
     |> Entry.changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc "Delete an entry."
+  def delete_entry(%Entry{} = entry) do
+    Repo.delete(entry)
   end
 
   @doc "Return a changeset for tracking entry changes."
