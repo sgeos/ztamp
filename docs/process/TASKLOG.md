@@ -8,30 +8,31 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.2 Coordinate Transformation (V0.2-M1-P3)
+**Name**: V0.2 Grid Overlay (V0.2-M1-P4)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
-- [x] Fill tool positioning logic revised with coordinate transformation.
+- [x] Fill tool revised with `--grid` flag.
 - [x] Sample output placed in `secret/`.
+- [x] Comment on automated generate-inspect-adjust in REVERSE_PROMPT.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.2-M1-P3-T1 | Add coordinate transformation to Rotation | Complete | `transform_position()` method maps form-space (fx, fy) to page-space (px, py). CCW 90: px = fy*W/H, py = H - fx*H/W. CW 90: px = W - fy*W/H, py = fx*H/W. 180: px = W-fx, py = H-fy. Corner verification passes for all four modes. |
-| V0.2-M1-P3-T2 | Apply transformation to text and circle rendering | Complete | Both text field positions and circle mark centers are transformed from form-space to page-space before PDF coordinate conversion. Circle radii remain swapped for 90-degree rotations. |
-| V0.2-M1-P3-T3 | Generate calibration sample | Complete | `secret/calibration_sample.pdf` (90,491 bytes). 112 text fields, 8 circle marks. Rotation: counter-clockwise with coordinate transformation. |
-| V0.2-M1-P3-T4 | Update documentation and commit | Complete | TASKLOG, REVERSE_PROMPT updated. |
+| V0.2-M1-P4-T1 | Add GridConfig and grid drawing to rztamp | Complete | `GridConfig` struct (interval_mm, color, label_font_size). `build_grid_ops()` draws form-space grid lines transformed to page-space. X-lines labeled "x{n}", Y-lines labeled "y{n}". Grid inserted between background and text layers. |
+| V0.2-M1-P4-T2 | Add --grid and --grid-color to tanf-fill | Complete | `--grid <interval_mm>` enables grid. `--grid-color <name>` sets color (green default). Named colors: green, gray, red, blue, black, magenta, cyan. `generate_form_pdf()` now accepts `grid: Option<&GridConfig>`. |
+| V0.2-M1-P4-T3 | Generate calibration sample with grid | Complete | `secret/calibration_sample.pdf` (95,579 bytes). 10mm grid, green, counter-clockwise rotation. 112 text fields, 8 circle marks. |
+| V0.2-M1-P4-T4 | Update documentation and commit | Complete | TASKLOG, REVERSE_PROMPT updated. |
 
 ## Notes
 
-- Form-space coordinates are in mm from the top-left of the rightside-up form. Page-space coordinates are in mm from the top-left of the physical PDF page.
-- For 90-degree rotations, the X and Y axes swap, and coordinates are scaled by W/H or H/W because the form's aspect ratio is preserved but its axes are transposed onto the page.
-- The transformation was verified algebraically at all four page corners for each rotation mode.
-- Previous notes on text rotation angles, bezier circles, and printpdf API patterns remain valid.
+- Grid lines are drawn in form-space coordinates and transformed to page-space using the active rotation. Labels show form-space values (e.g., "x30" means form-space X=30mm) so they correspond directly to `form_offsets.toml` entries.
+- For CCW 90 rotation, form-X grid lines appear as horizontal lines on the page, and form-Y grid lines appear as vertical lines. This matches the axis swap of the coordinate transformation.
+- Grid labels are drawn as unrotated text at the start of each grid line. They are small (5pt) to minimize visual interference with the form content.
+- Previous notes on coordinate transformation, text rotation, and printpdf API remain valid.
 
 ## History
 
@@ -44,3 +45,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.2-M1-P1: PDF Write PoC. printpdf integration, rztamp pdf/offsets modules, tanf-fill CLI tool, calibration sample generated. |
 | 2026-02-19 | V0.2-M1-P2: Rotation support. Rotation enum added to rztamp::pdf, --rotation flag added to tanf-fill, calibration sample regenerated with counter-clockwise rotation. |
 | 2026-02-19 | V0.2-M1-P3: Coordinate transformation. transform_position() added to map form-space to page-space for rotated forms. X/Y swap with aspect-ratio scaling for 90-degree modes. |
+| 2026-02-19 | V0.2-M1-P4: Grid overlay. --grid and --grid-color flags, GridConfig, build_grid_ops(). Form-space grid lines with labels for calibration. |

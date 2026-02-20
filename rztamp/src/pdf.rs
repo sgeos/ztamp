@@ -92,6 +92,21 @@ impl Rotation {
     }
 }
 
+/// Configuration for a calibration grid overlay.
+///
+/// Grid lines are drawn in form-space coordinates and transformed to
+/// page-space using the active rotation. Labels show form-space values
+/// so they correspond directly to `form_offsets.toml` entries.
+#[derive(Debug, Clone)]
+pub struct GridConfig {
+    /// Grid line interval in millimeters (form-space).
+    pub interval_mm: f32,
+    /// Grid line and label color.
+    pub color: TextColor,
+    /// Font size for grid labels in points.
+    pub label_font_size: f32,
+}
+
 /// A circle to draw on the form (for "circle one" options).
 #[derive(Debug)]
 pub struct CircleMark {
@@ -126,6 +141,7 @@ pub struct CircleMark {
 /// * `text_fields` - Text items to overlay on the form.
 /// * `circle_marks` - Circles to draw on the form.
 /// * `rotation` - How the form content is rotated in the template image.
+/// * `grid` - Optional grid overlay for calibration.
 ///
 /// # Errors
 ///
@@ -138,6 +154,7 @@ pub fn generate_form_pdf(
     text_fields: &[TextField],
     circle_marks: &[CircleMark],
     rotation: Rotation,
+    grid: Option<&GridConfig>,
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut doc = PdfDocument::new("TANF Job Search Form");
     let mut warnings: Vec<PdfWarnMsg> = Vec::new();
@@ -163,6 +180,17 @@ pub fn generate_form_pdf(
 
     // Use builtin Helvetica font.
     let font_handle = PdfFontHandle::Builtin(BuiltinFont::Helvetica);
+
+    // Draw grid overlay (above background, below text).
+    if let Some(grid_cfg) = grid {
+        ops.extend(build_grid_ops(
+            grid_cfg,
+            page_width_mm,
+            page_height_mm,
+            rotation,
+            &font_handle,
+        ));
+    }
 
     // Overlay text fields.
     let text_angle = rotation.text_angle_degrees();
@@ -250,6 +278,105 @@ pub fn generate_form_pdf(
     let page = PdfPage::new(Mm(page_width_mm), Mm(page_height_mm), ops);
     let pdf_bytes = doc.with_pages(vec![page]).save(&PdfSaveOptions::default(), &mut warnings);
     Ok(pdf_bytes)
+}
+
+/// Build PDF operations for a form-space calibration grid.
+///
+/// Draws grid lines at regular intervals in form-space coordinates,
+/// transformed to page-space using the active rotation. Each line is
+/// labeled with its form-space coordinate value so the human can read
+/// positions directly for `form_offsets.toml` editing.
+///
+/// Form-X lines (constant X, varying Y) label with "x{value}".
+/// Form-Y lines (constant Y, varying X) label with "y{value}".
+fn build_grid_ops(
+    config: &GridConfig,
+    page_w: f32,
+    page_h: f32,
+    rotation: Rotation,
+    font: &PdfFontHandle,
+) -> Vec<Op> {
+    let mut ops = Vec::new();
+    let color = config.color.to_pdf_color();
+    let interval = config.interval_mm;
+
+    // Form-X grid lines: vertical lines in form-space (fx = constant).
+    // For each fx value, draw a line from (fx, 0) to (fx, page_h) in form-space.
+    let mut fx = 0.0_f32;
+    while fx <= page_w {
+        let (sx, sy) = rotation.transform_position(fx, 0.0, page_w, page_h);
+        let (ex, ey) = rotation.transform_position(fx, page_h, page_w, page_h);
+
+        let pdf_sx = mm_to_pt(sx);
+        let pdf_sy = mm_to_pt(page_h - sy);
+        let pdf_ex = mm_to_pt(ex);
+        let pdf_ey = mm_to_pt(page_h - ey);
+
+        ops.push(Op::SetOutlineColor { col: color.clone() });
+        ops.push(Op::SetOutlineThickness { pt: Pt(0.3) });
+        ops.push(Op::DrawLine {
+            line: Line {
+                points: vec![
+                    LinePoint { p: Point { x: Pt(pdf_sx), y: Pt(pdf_sy) }, bezier: false },
+                    LinePoint { p: Point { x: Pt(pdf_ex), y: Pt(pdf_ey) }, bezier: false },
+                ],
+                is_closed: false,
+            },
+        });
+
+        // Label at the start of the line.
+        let label = format!("x{}", fx as u32);
+        ops.push(Op::StartTextSection);
+        ops.push(Op::SetFillColor { col: color.clone() });
+        ops.push(Op::SetFont { font: font.clone(), size: Pt(config.label_font_size) });
+        ops.push(Op::SetTextCursor {
+            pos: Point { x: Pt(pdf_sx + 1.0), y: Pt(pdf_sy - 1.0) },
+        });
+        ops.push(Op::ShowText { items: vec![TextItem::Text(label)] });
+        ops.push(Op::EndTextSection);
+
+        fx += interval;
+    }
+
+    // Form-Y grid lines: horizontal lines in form-space (fy = constant).
+    // For each fy value, draw a line from (0, fy) to (page_w, fy) in form-space.
+    let mut fy = 0.0_f32;
+    while fy <= page_h {
+        let (sx, sy) = rotation.transform_position(0.0, fy, page_w, page_h);
+        let (ex, ey) = rotation.transform_position(page_w, fy, page_w, page_h);
+
+        let pdf_sx = mm_to_pt(sx);
+        let pdf_sy = mm_to_pt(page_h - sy);
+        let pdf_ex = mm_to_pt(ex);
+        let pdf_ey = mm_to_pt(page_h - ey);
+
+        ops.push(Op::SetOutlineColor { col: color.clone() });
+        ops.push(Op::SetOutlineThickness { pt: Pt(0.3) });
+        ops.push(Op::DrawLine {
+            line: Line {
+                points: vec![
+                    LinePoint { p: Point { x: Pt(pdf_sx), y: Pt(pdf_sy) }, bezier: false },
+                    LinePoint { p: Point { x: Pt(pdf_ex), y: Pt(pdf_ey) }, bezier: false },
+                ],
+                is_closed: false,
+            },
+        });
+
+        // Label at the start of the line.
+        let label = format!("y{}", fy as u32);
+        ops.push(Op::StartTextSection);
+        ops.push(Op::SetFillColor { col: color.clone() });
+        ops.push(Op::SetFont { font: font.clone(), size: Pt(config.label_font_size) });
+        ops.push(Op::SetTextCursor {
+            pos: Point { x: Pt(pdf_sx + 1.0), y: Pt(pdf_sy - 1.0) },
+        });
+        ops.push(Op::ShowText { items: vec![TextItem::Text(label)] });
+        ops.push(Op::EndTextSection);
+
+        fy += interval;
+    }
+
+    ops
 }
 
 /// Convert millimeters to PDF points.

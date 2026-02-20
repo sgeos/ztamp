@@ -10,32 +10,26 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 ## Comments
 
-Answers to questions in previous reverse prompt.
+Answers to questions in the reverse prompt.
 
-1. I am open to an automated generate-inspect-adjust loop, if you can do that.
-2. A grid lines flag probably makes sense.
-3. Compile time is fine. We can figure out feature gates later.
-4. Manual testing is fine for now.
+1. Text is nominally translated correctly, but placement on the form is totally wrong.
+2. Add a `--grid` flag. Interval and text color should be specifiable.
+   The grid should be above the form background, but below the text.
+3. Are there any computer vision solutions?
+   Is there a sane feedback loop for human adjustment?
 
-Answers to questions in the most recent reverse prompt.
+Positioning comments:
 
-1. Text orientation is correct, but positions are wrong.
-   If offsets are from the top-left corner,
-   then rotated forms will need to use a different origin.
-   Also, a matrix probably needs to be used,
-   because X indicates the Y offset, and Y the X offset
-   for CW or CCW rotated documents.
-2. Assuming offsets were correct to begin with,
-   a rotation matrix should be able to produce the
-   correct offsets for a rotated document.
-3. Ellipse orientation is correct, but the position is wrong.
+- For most fields, X appears to be too large.
+- For most fields, Y appears to be too small.
+  For the bottom signature and date, Y is too large.
+- Spacing is slightly too distand for application rows.
 
 ## Objectives
 
 ### Revise Fill Tool
 
-Attempt to adjust fill tool text placement logic based on
-the above feedback.
+Attempt to adjust fill tool to add grid logic based on the above feedback.
 
 ### Repeat Calibaration Test
 
@@ -52,9 +46,9 @@ It is OK to use the same filename.
 
 ## Success Criteria
 
-- Revise fill tool positioning logic based on feedback.
+- Revise fill tool based on feedback.
 - Sample output placed in `secret`
-- Perform an automated generate-inspect-adjust if you can.
+- Comment on automated generate-inspect-adjust in the next reverse prompt.
 
 ## Notes
 

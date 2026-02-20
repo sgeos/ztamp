@@ -5,9 +5,10 @@
 //!
 //! Usage:
 //!     tanf-fill --offsets <path> --secrets <path> --template <path> --output <path>
-//!              [--rotation <mode>]
+//!              [--rotation <mode>] [--grid <interval_mm>] [--grid-color <color>]
 //!
 //! Rotation modes: rightside-up (default), counter-clockwise, clockwise, upside-down
+//! Grid colors: green (default), gray, red, blue, black, magenta, cyan
 //!
 //! For calibration mode, uses colored text:
 //! - Red for non-job-search fields
@@ -22,7 +23,7 @@ use std::process;
 use serde::Deserialize;
 
 use rztamp::offsets;
-use rztamp::pdf::{self, Rotation, TextColor};
+use rztamp::pdf::{self, GridConfig, Rotation, TextColor};
 
 /// Secrets file structure.
 #[derive(Debug, Deserialize)]
@@ -66,6 +67,8 @@ struct Args {
     template_path: PathBuf,
     output_path: PathBuf,
     rotation: Rotation,
+    grid_interval: Option<f32>,
+    grid_color: TextColor,
 }
 
 fn parse_args() -> Args {
@@ -74,9 +77,11 @@ fn parse_args() -> Args {
     if args.len() < 9 {
         eprintln!(
             "Usage: tanf-fill --offsets <path> --secrets <path> \
-             --template <path> --output <path> [--rotation <mode>]"
+             --template <path> --output <path> [--rotation <mode>] \
+             [--grid <interval_mm>] [--grid-color <color>]"
         );
         eprintln!("  Rotation modes: rightside-up (default), counter-clockwise, clockwise, upside-down");
+        eprintln!("  Grid colors: green (default), gray, red, blue, black, magenta, cyan");
         process::exit(1);
     }
 
@@ -85,6 +90,8 @@ fn parse_args() -> Args {
     let mut template_path = None;
     let mut output_path = None;
     let mut rotation = Rotation::Normal;
+    let mut grid_interval: Option<f32> = None;
+    let mut grid_color = TextColor { r: 0.0, g: 0.6, b: 0.0 }; // default green
 
     let mut i = 1;
     while i < args.len() {
@@ -119,6 +126,21 @@ fn parse_args() -> Args {
                     }
                 };
             }
+            "--grid" => {
+                i += 1;
+                grid_interval = Some(args[i].parse::<f32>().unwrap_or_else(|_| {
+                    eprintln!("Invalid grid interval: {}", args[i]);
+                    process::exit(1);
+                }));
+            }
+            "--grid-color" => {
+                i += 1;
+                grid_color = parse_color(&args[i]).unwrap_or_else(|| {
+                    eprintln!("Unknown grid color: {}", args[i]);
+                    eprintln!("Valid colors: green, gray, red, blue, black, magenta, cyan");
+                    process::exit(1);
+                });
+            }
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
@@ -146,6 +168,22 @@ fn parse_args() -> Args {
         template_path: template_path.unwrap(),
         output_path: output_path.unwrap(),
         rotation,
+        grid_interval,
+        grid_color,
+    }
+}
+
+/// Parse a named color string to a TextColor.
+fn parse_color(name: &str) -> Option<TextColor> {
+    match name {
+        "green" => Some(TextColor { r: 0.0, g: 0.6, b: 0.0 }),
+        "gray" | "grey" => Some(TextColor { r: 0.5, g: 0.5, b: 0.5 }),
+        "red" => Some(TextColor::RED),
+        "blue" => Some(TextColor::BLUE),
+        "black" => Some(TextColor::BLACK),
+        "magenta" => Some(TextColor::MAGENTA),
+        "cyan" => Some(TextColor { r: 0.0, g: 0.7, b: 0.7 }),
+        _ => None,
     }
 }
 
@@ -201,6 +239,17 @@ fn main() {
         Rotation::Cw90 => "clockwise (90 degrees)",
         Rotation::UpsideDown => "upside-down (180 degrees)",
     };
+
+    // Build optional grid config.
+    let grid_config = args.grid_interval.map(|interval| {
+        eprintln!("Grid enabled: {}mm interval", interval);
+        GridConfig {
+            interval_mm: interval,
+            color: args.grid_color,
+            label_font_size: 5.0,
+        }
+    });
+
     eprintln!(
         "Generating PDF with {} text fields, {} circle marks, rotation: {}...",
         text_fields.len(), circle_marks.len(), rotation_label
@@ -215,6 +264,7 @@ fn main() {
         &text_fields,
         &circle_marks,
         args.rotation,
+        grid_config.as_ref(),
     ).unwrap_or_else(|e| {
         eprintln!("Failed to generate PDF: {e}");
         process::exit(1);

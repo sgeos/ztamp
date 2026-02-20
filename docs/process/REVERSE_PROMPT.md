@@ -9,81 +9,79 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.2-M1-P3 Coordinate Transformation
+**Task**: V0.2-M1-P4 Grid Overlay
 
 ---
 
 ## Verification
 
-### Coordinate Transformation (rztamp/src/pdf.rs)
+### Grid Overlay (rztamp/src/pdf.rs)
 
-A `transform_position()` method was added to the `Rotation` enum. It maps form-space coordinates (mm from top-left of the rightside-up form) to page-space coordinates (mm from top-left of the physical PDF page).
+A `GridConfig` struct and `build_grid_ops()` function were added. The grid draws lines at regular intervals in form-space coordinates, transformed to page-space using the active rotation. Each line is labeled with its form-space value.
 
-The transformation formulas for each mode are listed below. W is page width (215.9mm) and H is page height (279.4mm).
+For CCW 90 rotation, form-X grid lines appear as horizontal lines on the page (labeled "x0", "x10", "x20", ...), and form-Y grid lines appear as vertical lines (labeled "y0", "y10", "y20", ...). These labels correspond directly to the X and Y values in `form_offsets.toml`.
 
-| Mode | page_x | page_y |
-|------|--------|--------|
-| Normal | fx | fy |
-| CCW 90 | fy * W / H | H - fx * H / W |
-| CW 90 | W - fy * W / H | fx * H / W |
-| 180 | W - fx | H - fy |
+The grid is drawn between the background image and the text overlay, as requested. Grid lines use 0.3pt thickness and labels use 5pt font.
 
-For 90-degree rotations, the X and Y axes swap, with proportional scaling by the aspect ratio (W/H or H/W) to map form dimensions onto page dimensions.
+### CLI Tool (tools/src/fill.rs)
 
-This transformation is applied to both text field positions and circle mark center positions before conversion to PDF coordinates. Circle radii remain swapped (rx and ry exchanged) for 90-degree rotations as before.
+Two new optional flags were added.
 
-### Corner Verification
+```
+tanf-fill --offsets <path> --secrets <path> --template <path> --output <path>
+         [--rotation <mode>] [--grid <interval_mm>] [--grid-color <color>]
+```
 
-The transformation was verified algebraically at all four corners.
-
-CCW 90 example (W=215.9, H=279.4).
-
-| Form corner | Form (fx, fy) | Page (px, py) | Expected |
-|-------------|---------------|---------------|----------|
-| Top-left | (0, 0) | (0, 279.4) | Bottom-left |
-| Top-right | (215.9, 0) | (0, 0) | Top-left |
-| Bottom-left | (0, 279.4) | (215.9, 279.4) | Bottom-right |
-| Bottom-right | (215.9, 279.4) | (215.9, 0) | Top-right |
+The `--grid` flag takes an interval in millimeters (e.g., `--grid 10` for 10mm spacing). The `--grid-color` flag accepts named colors: green (default), gray, red, blue, black, magenta, cyan.
 
 ### Sample Output
 
-Generated at `secret/calibration_sample.pdf` (90,491 bytes, 112 text fields, 8 circle marks, counter-clockwise rotation with coordinate transformation).
+Generated at `secret/calibration_sample.pdf` (95,579 bytes, 112 text fields, 8 circle marks, 10mm grid, green, counter-clockwise rotation).
 
 ---
 
-## Architecture Notes
+## Automated Generate-Inspect-Adjust
 
-### Two-Stage Coordinate Pipeline
+The human pilot asked about computer vision solutions and a sane feedback loop for human adjustment.
 
-Coordinate handling now has two stages.
+### Computer Vision Options
 
-1. **Form-space to page-space**: `Rotation::transform_position()` maps (fx, fy) to (px, py) using the rotation-specific formulas. For Normal mode, this is an identity transformation.
-2. **Page-space to PDF-space**: `mm_to_pt()` and Y-axis inversion (`page_height_mm - py`) convert page-space mm to PDF points (origin at bottom-left).
+Practical computer vision approaches for automated calibration are limited in this context. The core challenge is that the scanned form image is a 1-bit black-and-white bitmap with no structural metadata. Detecting field locations would require either optical character recognition (OCR) to locate label text and infer field positions, or template matching against known regions. Both approaches would require additional dependencies (such as `tesseract` for OCR or the `imageproc` crate for template matching) and substantial implementation effort. The accuracy of OCR on a 1-bit fax-encoded scan is uncertain.
 
-This separation means `form_offsets.toml` coordinates always describe the rightside-up form, regardless of which rotation mode is used at render time. The same offsets file works for all four rotation modes.
+Given the project's current scope, the practical cost of adding computer vision infrastructure is high relative to the manual calibration task, which involves approximately 40 field positions.
 
-### Previous Prompt Answers Incorporated
+### Recommended Human Calibration Workflow
 
-The following decisions from the human pilot are now reflected in the codebase.
+The most reliable feedback loop uses the grid overlay with the following process.
 
-1. Automated generate-inspect-adjust loop: Open to it if feasible.
-2. Grid lines flag: Would be useful. Not yet implemented.
-3. NIF compile time: Acceptable. Feature gates deferred.
-4. Test strategy: Manual testing is sufficient for now.
+1. Generate a calibration PDF with `--grid 10` (or `--grid 5` for finer resolution).
+2. Open the PDF and rotate it 90 degrees clockwise to read the form content rightside-up.
+3. For each field that needs adjustment, read the nearest grid line values.
+   - The "x" labels correspond to the X values in `form_offsets.toml`.
+   - The "y" labels correspond to the Y values in `form_offsets.toml`.
+4. Edit `form_offsets.toml` with the corrected values.
+5. Delete the old output and regenerate.
+6. Repeat until positions are accurate.
+
+For bulk adjustments, if most fields have a consistent offset error (e.g., all X values are 5mm too large), the human can apply a uniform correction to all X values in `form_offsets.toml`.
+
+### Alternative: Offset Sweep
+
+An automated approach without computer vision would generate multiple PDFs with systematic offset variations (e.g., a global X shift of -10, -5, 0, +5, +10 mm applied to all coordinates). The human inspects the set and identifies which shift produces the best alignment. This could be implemented as a `--sweep` mode if useful.
 
 ---
 
 ## Questions for Human Review
 
-1. **Calibration accuracy.** Please inspect `secret/calibration_sample.pdf` to verify that text positions now align with the form fields on the rotated template. The coordinate transformation should place text in approximately the correct locations. Fine-tuning of individual field offsets in `form_offsets.toml` may still be needed.
+1. **Grid readability.** Please inspect `secret/calibration_sample.pdf` to verify that the grid lines and labels are visible and useful. The labels show form-space coordinates ("x30" means form-space X=30mm). If the 10mm interval is too coarse or too fine, adjust with `--grid 5` or `--grid 20`.
 
-2. **Grid lines mode.** You indicated a grid lines flag would be useful. Should the next prompt add a `--grid` flag to the CLI tool that overlays numbered grid lines (at regular mm intervals) on the template instead of field text? This would help with offset calibration.
+2. **Offset calibration.** With the grid visible, you can now read the form-space coordinates of actual field positions. Adjust `form_offsets.toml` values accordingly. If the current offsets have a systematic error (consistently off in one direction), please note the approximate magnitude so the AI agent can apply a bulk correction.
 
-3. **Automated calibration.** You mentioned being open to an automated generate-inspect-adjust loop. Without computer vision capabilities, the AI agent cannot inspect the visual output of the PDF. The adjustment loop would need to be driven by human visual inspection. An alternative would be to generate multiple PDFs with systematic offset variations to narrow down correct positions. Would either approach be helpful?
+3. **Sweep mode.** Would a `--sweep` mode that generates multiple PDFs with systematic offset shifts be helpful for finding the right global correction?
 
 ---
 
 ## Notes
 
-- The form_offsets.toml coordinates remain unchanged. They describe the rightside-up form and are now correctly transformed at render time.
+- The `form_offsets.toml` coordinates remain unchanged from the initial visual estimates. They describe positions on the rightside-up form and are transformed at render time.
 - The existing dead code warning for the `form` field in the `Secrets` struct persists. This is pre-existing from V0.2-M1-P1.
