@@ -16,14 +16,14 @@ Answers to questions in the reverse prompt.
 
 ## Objectives
 
-### Update Export Tool
+### Refactor Export Tool
 
-Add a `--watermark` flag that accepts a color.
-When used, "TEST SAMPLE" is printed diagonally above everything else
-in the specified color.
+Add a `--debug-fill` flag that fills the form with the current test data.
+Production use will need to supply real data.
 
 ### Generate Three PoC File In Preparation for Concatenation
 
+Reexport each PoC file with the new flag.
 Each file should have a different name.
 
 #### Almost Production PoC
@@ -60,7 +60,7 @@ Each file should have a different name.
 
 ## Success Criteria
 
-- Watermark flag added to export tool.
+- Debug fill flag added to export tool.
 - Three PoCs generated.
 
 ## Notes

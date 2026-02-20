@@ -191,21 +191,21 @@ font_size = 9
 alignment = "right"
 
 [fields.employed_start_date]
-x = 107.0
+x = 105.0
 y = 147.5
 width = 20.0
 font_size = 9
 alignment = "center"
 
 [fields.employed_hours_per_week]
-x = 180.0
+x = 178.5
 y = 147.5
 width = 12.0
 font_size = 9
 alignment = "center"
 
 [fields.employed_hourly_rate]
-x = 224.0
+x = 222.5
 y = 147.5
 width = 12.0
 font_size = 9
@@ -226,7 +226,7 @@ font_size = 9
 alignment = "center"
 
 [fields.employed_pay_frequency_semimonthly]
-x = 174.0
+x = 175.0
 y = 151.0
 font_size = 9
 alignment = "center"
@@ -239,7 +239,7 @@ alignment = "center"
 
 # Date of first check: three fields (month / day / year).
 [fields.employed_first_check_month]
-x = 116.0
+x = 117.0
 y = 156.5
 width = 10.0
 font_size = 9
@@ -260,7 +260,7 @@ font_size = 9
 alignment = "left"
 
 [fields.employed_tips]
-x = 151.0
+x = 150.0
 y = 156.5
 width = 12.0
 font_size = 9
@@ -276,25 +276,25 @@ alignment = "center"
 # Insurance: one of "None", "Employer Paid", "Employee Paid", "Both Paid".
 # Circle-one options.
 [fields.employed_insurance_none]
-x = 127.5
+x = 128.0
 y = 160.0
 font_size = 9
 alignment = "center"
 
 [fields.employed_insurance_employer_paid]
-x = 142.0
+x = 142.5
 y = 160.0
 font_size = 9
 alignment = "center"
 
 [fields.employed_insurance_employee_paid]
-x = 171.0
+x = 172.0
 y = 160.0
 font_size = 9
 alignment = "center"
 
 [fields.employed_insurance_both_paid]
-x = 200.0
+x = 200.5
 y = 160.0
 font_size = 9
 alignment = "center"

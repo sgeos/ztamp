@@ -9,27 +9,23 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.2-M1-P13 Watermark and Three PoCs
+**Task**: V0.2-M1-P14 Debug Fill Flag
 
 ---
 
 ## Verification
 
-### --watermark Flag
+### --debug-fill Flag
 
-A `--watermark <color>` flag was added to tanf-fill. When specified, "TEST SAMPLE" is rendered at 72pt font diagonally (45 degrees) across the center of the page, on top of all other content.
+A `--debug-fill` boolean flag was added to tanf-fill. When specified, `build_value_map` includes all hardcoded test data (signature placeholders, employment section fields, pay frequency options, insurance options). Without it, only secrets-sourced fields are populated (case_name, upi_number, job_search_from/to/hours, submission_deadline_time/date/location).
 
-### --circle-all Flag
+### Three PoC Files (Regenerated)
 
-A `--circle-all` flag was added to tanf-fill. Without it, only one option per circle-one series is circled (Weekly for pay frequency, None for insurance). With it, all options in each series are circled.
-
-### Three PoC Files
-
-| File | Size | Grid | Text Color | Labels | Circles | Watermark |
-|------|------|------|-----------|--------|---------|-----------|
-| `secret/poc_production.pdf` | 87,965 | No | Black | No | 2 (one per series) | Red |
-| `secret/poc_testing.pdf` | 89,632 | No | Black | No | 8 (all) | Red |
-| `secret/poc_debug.pdf` | 100,544 | 5mm green | Calibration | Yes | 8 (all) | Red |
+| File | Size | Grid | Text Color | Labels | Circles | Watermark | Debug Fill |
+|------|------|------|-----------|--------|---------|-----------|-----------:|
+| `secret/poc_production.pdf` | 87,965 | No | Black | No | 2 (one per series) | Red | Yes |
+| `secret/poc_testing.pdf` | 89,632 | No | Black | No | 8 (all) | Red | Yes |
+| `secret/poc_debug.pdf` | 100,544 | 5mm green | Calibration | Yes | 8 (all) | Red | Yes |
 
 ---
 
@@ -45,7 +41,8 @@ rm -f secret/poc_production.pdf && tools/target/debug/tanf-fill \
   --output secret/poc_production.pdf \
   --rotation counter-clockwise \
   --text-color black \
-  --watermark red
+  --watermark red \
+  --debug-fill
 ```
 
 ### Black Text Testing PoC
@@ -59,7 +56,8 @@ rm -f secret/poc_testing.pdf && tools/target/debug/tanf-fill \
   --rotation counter-clockwise \
   --text-color black \
   --circle-all \
-  --watermark red
+  --watermark red \
+  --debug-fill
 ```
 
 ### Debug PoC
@@ -74,7 +72,8 @@ rm -f secret/poc_debug.pdf && tools/target/debug/tanf-fill \
   --grid 5 \
   --labels \
   --circle-all \
-  --watermark red
+  --watermark red \
+  --debug-fill
 ```
 
 To rebuild after code changes, first run `cargo build --manifest-path tools/Cargo.toml`.
@@ -83,15 +82,16 @@ To rebuild after code changes, first run `cargo build --manifest-path tools/Carg
 
 ## Questions for Human Review
 
-1. **Watermark appearance.** Does the diagonal "TEST SAMPLE" watermark look acceptable? If the size, position, or angle needs adjustment, these are configurable in the `WatermarkConfig` struct.
+1. **Data split correctness.** The split places participant, job search, and submission fields in the "always included" category (sourced from secrets.toml). Signature placeholders, employment section, pay frequency options, and insurance options are gated behind `--debug-fill`. Is this the correct division, or should any fields move between categories?
 
-2. **Default selected circles.** The "Almost Production" PoC circles "Weekly" and "None" as the default selections. Are these reasonable defaults, or should different options be selected?
+2. **Production data mechanism.** Without `--debug-fill`, fields like signatures and employment data are simply absent from the value map and not rendered. The production mechanism for supplying this data is not yet defined. Should these fields eventually come from secrets.toml, a separate data file, or another source?
 
-3. **Concatenation.** The three PoC files are ready for concatenation. Are any adjustments needed before proceeding?
+3. **Concatenation readiness.** The three PoC files are ready for concatenation. Are any adjustments needed before proceeding?
 
 ---
 
 ## Notes
 
-- All three flags (`--watermark`, `--circle-all`, `--labels`) are independent and can be combined freely.
+- All CLI flags (`--watermark`, `--circle-all`, `--labels`, `--debug-fill`) are independent and can be combined freely.
 - The pre-existing dead code warning for the `form` field in the `Secrets` struct persists (from V0.2-M1-P1).
+- Output sizes are identical to P13, confirming `--debug-fill` produces equivalent output when enabled.

@@ -6,7 +6,7 @@
 //! Usage:
 //!     tanf-fill --offsets <path> --secrets <path> --template <path> --output <path>
 //!              [--rotation <mode>] [--grid <interval_mm>] [--grid-color <color>]
-//!              [--text-color <color>] [--labels]
+//!              [--text-color <color>] [--labels] [--debug-fill]
 //!
 //! Rotation modes: rightside-up (default), counter-clockwise, clockwise, upside-down
 //! Grid/text colors: green, gray, red, blue, black (default for text), magenta, cyan
@@ -79,6 +79,7 @@ struct Args {
     show_labels: bool,
     circle_all: bool,
     watermark_color: Option<TextColor>,
+    debug_fill: bool,
 }
 
 fn parse_args() -> Args {
@@ -107,6 +108,7 @@ fn parse_args() -> Args {
     let mut show_labels = false;
     let mut circle_all = false;
     let mut watermark_color: Option<TextColor> = None;
+    let mut debug_fill = false;
 
     let mut i = 1;
     while i < args.len() {
@@ -170,6 +172,9 @@ fn parse_args() -> Args {
             "--circle-all" => {
                 circle_all = true;
             }
+            "--debug-fill" => {
+                debug_fill = true;
+            }
             "--watermark" => {
                 i += 1;
                 watermark_color = Some(parse_color(&args[i]).unwrap_or_else(|| {
@@ -211,6 +216,7 @@ fn parse_args() -> Args {
         show_labels,
         circle_all,
         watermark_color,
+        debug_fill,
     }
 }
 
@@ -255,8 +261,8 @@ fn main() {
             process::exit(1);
         });
 
-    // Build field value map from secrets.
-    let values = build_value_map(&secrets);
+    // Build field value map from secrets (and debug test data if --debug-fill).
+    let values = build_value_map(&secrets, args.debug_fill);
 
     // Load template image.
     let template_bytes = fs::read(&args.template_path)
@@ -347,57 +353,63 @@ fn load_secrets(path: &Path) -> Result<Secrets, Box<dyn std::error::Error>> {
 }
 
 /// Map secrets to field names matching form_offsets.toml field keys.
-fn build_value_map(secrets: &Secrets) -> HashMap<String, String> {
+///
+/// When `debug_fill` is true, includes hardcoded test data for signature
+/// placeholders, employment section, pay frequency options, and insurance
+/// options. Without it, only secrets-sourced fields are populated.
+fn build_value_map(secrets: &Secrets, debug_fill: bool) -> HashMap<String, String> {
     let mut map = HashMap::new();
 
-    // Participant fields.
+    // Participant fields (from secrets).
     map.insert("case_name".to_string(), secrets.participant.case_name.clone());
     map.insert("upi_number".to_string(), secrets.participant.upi_number.clone());
 
-    // Job search fields.
+    // Job search fields (from secrets).
     map.insert("job_search_from".to_string(), secrets.job_search.date_from.clone());
     map.insert("job_search_to".to_string(), secrets.job_search.date_to.clone());
     map.insert("job_search_hours".to_string(), secrets.job_search.hours.to_string());
 
-    // Submission fields.
+    // Submission fields (from secrets).
     map.insert("submission_deadline_time".to_string(), secrets.submission.deadline_time.clone());
     map.insert("submission_deadline_date".to_string(), secrets.submission.deadline_date.clone());
     map.insert("submission_location".to_string(), secrets.submission.location.clone());
 
-    // Signature placeholders.
-    map.insert("participant_signature_top".to_string(), "SIGNATURE".to_string());
-    map.insert("participant_signature_top_date".to_string(), "01/01/2001".to_string());
-    map.insert("participant_signature_bottom".to_string(), "SIGNATURE".to_string());
-    map.insert("participant_signature_bottom_date".to_string(), "01/01/2001".to_string());
+    if debug_fill {
+        // Signature placeholders.
+        map.insert("participant_signature_top".to_string(), "SIGNATURE".to_string());
+        map.insert("participant_signature_top_date".to_string(), "01/01/2001".to_string());
+        map.insert("participant_signature_bottom".to_string(), "SIGNATURE".to_string());
+        map.insert("participant_signature_bottom_date".to_string(), "01/01/2001".to_string());
 
-    // "Should you become employed" placeholders.
-    map.insert("employed_name_address_line1".to_string(), "Acme Corp".to_string());
-    map.insert("employed_name_address_line2".to_string(), "123 Employment Ave".to_string());
-    map.insert("employed_name_address_line3".to_string(), "Las Vegas, NV 89101".to_string());
-    map.insert("employed_telephone".to_string(), "702-555-0100".to_string());
-    map.insert("employed_start_date".to_string(), "04/15/2001".to_string());
-    map.insert("employed_hours_per_week".to_string(), "40".to_string());
-    map.insert("employed_hourly_rate".to_string(), "$15.00".to_string());
+        // "Should you become employed" placeholders.
+        map.insert("employed_name_address_line1".to_string(), "Acme Corp".to_string());
+        map.insert("employed_name_address_line2".to_string(), "123 Employment Ave".to_string());
+        map.insert("employed_name_address_line3".to_string(), "Las Vegas, NV 89101".to_string());
+        map.insert("employed_telephone".to_string(), "702-555-0100".to_string());
+        map.insert("employed_start_date".to_string(), "04/15/2001".to_string());
+        map.insert("employed_hours_per_week".to_string(), "40".to_string());
+        map.insert("employed_hourly_rate".to_string(), "$15.00".to_string());
 
-    // Pay frequency options (all shown for calibration).
-    map.insert("employed_pay_frequency_weekly".to_string(), "Weekly".to_string());
-    map.insert("employed_pay_frequency_biweekly".to_string(), "Bi-weekly".to_string());
-    map.insert("employed_pay_frequency_semimonthly".to_string(), "Semi-monthly".to_string());
-    map.insert("employed_pay_frequency_monthly".to_string(), "Monthly".to_string());
+        // Pay frequency options (all shown for calibration).
+        map.insert("employed_pay_frequency_weekly".to_string(), "Weekly".to_string());
+        map.insert("employed_pay_frequency_biweekly".to_string(), "Bi-weekly".to_string());
+        map.insert("employed_pay_frequency_semimonthly".to_string(), "Semi-monthly".to_string());
+        map.insert("employed_pay_frequency_monthly".to_string(), "Monthly".to_string());
 
-    // Date of first check.
-    map.insert("employed_first_check_month".to_string(), "05".to_string());
-    map.insert("employed_first_check_day".to_string(), "01".to_string());
-    map.insert("employed_first_check_year".to_string(), "2001".to_string());
+        // Date of first check.
+        map.insert("employed_first_check_month".to_string(), "05".to_string());
+        map.insert("employed_first_check_day".to_string(), "01".to_string());
+        map.insert("employed_first_check_year".to_string(), "2001".to_string());
 
-    map.insert("employed_tips".to_string(), "No".to_string());
-    map.insert("employed_job_title".to_string(), "Analyst".to_string());
+        map.insert("employed_tips".to_string(), "No".to_string());
+        map.insert("employed_job_title".to_string(), "Analyst".to_string());
 
-    // Insurance options (all shown for calibration).
-    map.insert("employed_insurance_none".to_string(), "None".to_string());
-    map.insert("employed_insurance_employer_paid".to_string(), "Employer Paid".to_string());
-    map.insert("employed_insurance_employee_paid".to_string(), "Employee Paid".to_string());
-    map.insert("employed_insurance_both_paid".to_string(), "Both Paid".to_string());
+        // Insurance options (all shown for calibration).
+        map.insert("employed_insurance_none".to_string(), "None".to_string());
+        map.insert("employed_insurance_employer_paid".to_string(), "Employer Paid".to_string());
+        map.insert("employed_insurance_employee_paid".to_string(), "Employee Paid".to_string());
+        map.insert("employed_insurance_both_paid".to_string(), "Both Paid".to_string());
+    }
 
     map
 }
