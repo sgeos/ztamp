@@ -64,6 +64,32 @@ impl Rotation {
             Rotation::UpsideDown => 180.0,
         }
     }
+
+    /// Transform form-space coordinates to page-space coordinates.
+    ///
+    /// Form-space coordinates (fx, fy) are in millimeters from the top-left
+    /// of the rightside-up form. Page-space coordinates (px, py) are in
+    /// millimeters from the top-left of the physical PDF page.
+    ///
+    /// For 90-degree rotations, the form's aspect ratio differs from the
+    /// page's, so coordinates are scaled proportionally.
+    fn transform_position(self, fx: f32, fy: f32, page_w: f32, page_h: f32) -> (f32, f32) {
+        match self {
+            Rotation::Normal => (fx, fy),
+            Rotation::Ccw90 => (
+                fy * page_w / page_h,
+                page_h - fx * page_h / page_w,
+            ),
+            Rotation::Cw90 => (
+                page_w - fy * page_w / page_h,
+                fx * page_h / page_w,
+            ),
+            Rotation::UpsideDown => (
+                page_w - fx,
+                page_h - fy,
+            ),
+        }
+    }
 }
 
 /// A circle to draw on the form (for "circle one" options).
@@ -81,12 +107,13 @@ pub struct CircleMark {
 /// Creates a new PDF with the template image as background and the provided
 /// text fields and circle marks overlaid.
 ///
-/// Coordinates in `TextField` and `CircleMark` are in millimeters from the
-/// top-left corner of the page. This function converts them to PDF coordinates
+/// Coordinates in `TextField` and `CircleMark` are in form space: millimeters
+/// from the top-left corner of the rightside-up form. When `rotation` is not
+/// `Normal`, this function transforms form-space coordinates to page-space
+/// coordinates using a rotation matrix, then converts to PDF coordinates
 /// (origin at bottom-left).
 ///
-/// When `rotation` is not `Normal`, text is rendered at the specified angle
-/// to match form content that is rotated within the template image. Circle
+/// For rotated modes, text is rendered at the appropriate angle and circle
 /// radii are swapped for 90-degree rotations so the ellipse aligns with
 /// the text direction.
 ///
@@ -140,8 +167,12 @@ pub fn generate_form_pdf(
     // Overlay text fields.
     let text_angle = rotation.text_angle_degrees();
     for field in text_fields {
-        let pdf_x = mm_to_pt(field.x_mm);
-        let pdf_y = mm_to_pt(page_height_mm - field.y_mm);
+        // Transform form-space coordinates to page-space, then to PDF points.
+        let (page_x_mm, page_y_mm) = rotation.transform_position(
+            field.x_mm, field.y_mm, page_width_mm, page_height_mm,
+        );
+        let pdf_x = mm_to_pt(page_x_mm);
+        let pdf_y = mm_to_pt(page_height_mm - page_y_mm);
 
         ops.push(Op::StartTextSection);
         ops.push(Op::SetFillColor { col: field.color.to_pdf_color() });
@@ -172,8 +203,12 @@ pub fn generate_form_pdf(
     // Swap ellipse radii for 90-degree rotations so the major axis
     // aligns with the rotated text direction.
     for circle in circle_marks {
-        let cx = mm_to_pt(circle.center_x_mm);
-        let cy = mm_to_pt(page_height_mm - circle.center_y_mm);
+        // Transform form-space center to page-space, then to PDF points.
+        let (page_cx_mm, page_cy_mm) = rotation.transform_position(
+            circle.center_x_mm, circle.center_y_mm, page_width_mm, page_height_mm,
+        );
+        let cx = mm_to_pt(page_cx_mm);
+        let cy = mm_to_pt(page_height_mm - page_cy_mm);
         let (rx_mm, ry_mm) = match rotation {
             Rotation::Ccw90 | Rotation::Cw90 => (circle.radius_y_mm, circle.radius_x_mm),
             Rotation::Normal | Rotation::UpsideDown => {

@@ -9,64 +9,81 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.2-M1-P2 Rotation Support
+**Task**: V0.2-M1-P3 Coordinate Transformation
 
 ---
 
 ## Verification
 
-### Rotation Enum (rztamp/src/pdf.rs)
+### Coordinate Transformation (rztamp/src/pdf.rs)
 
-A `Rotation` enum was added with four variants.
+A `transform_position()` method was added to the `Rotation` enum. It maps form-space coordinates (mm from top-left of the rightside-up form) to page-space coordinates (mm from top-left of the physical PDF page).
 
-- **Normal**: No rotation (rightside-up). Uses `Op::SetTextCursor` for text placement, preserving previous behavior.
-- **Ccw90**: 90 degrees counter-clockwise. Uses `Op::SetTextMatrix` with `TextMatrix::TranslateRotate(x, y, 90.0)`.
-- **Cw90**: 90 degrees clockwise. Uses `TextMatrix::TranslateRotate(x, y, 270.0)`.
-- **UpsideDown**: 180 degrees. Uses `TextMatrix::TranslateRotate(x, y, 180.0)`.
+The transformation formulas for each mode are listed below. W is page width (215.9mm) and H is page height (279.4mm).
 
-The `generate_form_pdf()` function accepts an additional `rotation: Rotation` parameter. For 90-degree rotations (Ccw90 and Cw90), circle mark ellipse radii are swapped so the major axis follows the text direction.
+| Mode | page_x | page_y |
+|------|--------|--------|
+| Normal | fx | fy |
+| CCW 90 | fy * W / H | H - fx * H / W |
+| CW 90 | W - fy * W / H | fx * H / W |
+| 180 | W - fx | H - fy |
 
-### CLI Tool (tools/src/fill.rs)
+For 90-degree rotations, the X and Y axes swap, with proportional scaling by the aspect ratio (W/H or H/W) to map form dimensions onto page dimensions.
 
-The `tanf-fill` binary now accepts an optional `--rotation` flag.
+This transformation is applied to both text field positions and circle mark center positions before conversion to PDF coordinates. Circle radii remain swapped (rx and ry exchanged) for 90-degree rotations as before.
 
-```
-tanf-fill --offsets <path> --secrets <path> --template <path> --output <path> [--rotation <mode>]
-```
+### Corner Verification
 
-Valid rotation modes are `rightside-up` (default), `counter-clockwise`, `clockwise`, and `upside-down`. The tool logs the active rotation mode to stderr.
+The transformation was verified algebraically at all four corners.
+
+CCW 90 example (W=215.9, H=279.4).
+
+| Form corner | Form (fx, fy) | Page (px, py) | Expected |
+|-------------|---------------|---------------|----------|
+| Top-left | (0, 0) | (0, 279.4) | Bottom-left |
+| Top-right | (215.9, 0) | (0, 0) | Top-left |
+| Bottom-left | (0, 279.4) | (215.9, 279.4) | Bottom-right |
+| Bottom-right | (215.9, 279.4) | (215.9, 0) | Top-right |
 
 ### Sample Output
 
-Generated at `secret/calibration_sample.pdf` (90,481 bytes, 112 text fields, 8 circle marks, counter-clockwise rotation).
+Generated at `secret/calibration_sample.pdf` (90,491 bytes, 112 text fields, 8 circle marks, counter-clockwise rotation with coordinate transformation).
 
 ---
 
 ## Architecture Notes
 
-### Text Rotation in printpdf 0.9.1
+### Two-Stage Coordinate Pipeline
 
-The `TextMatrix::TranslateRotate(Pt, Pt, f32)` variant provides combined translation and rotation in a single PDF `Tm` operator. The third argument is the rotation angle in degrees. The internal conversion is `(360.0 - angle).to_radians()`, producing counterclockwise-positive rotation in PDF user space.
+Coordinate handling now has two stages.
 
-For normal (0 degree) rendering, `Op::SetTextCursor` is used instead of `Op::SetTextMatrix`. This avoids unnecessary matrix operations for the common case and preserves backward-compatible behavior.
+1. **Form-space to page-space**: `Rotation::transform_position()` maps (fx, fy) to (px, py) using the rotation-specific formulas. For Normal mode, this is an identity transformation.
+2. **Page-space to PDF-space**: `mm_to_pt()` and Y-axis inversion (`page_height_mm - py`) convert page-space mm to PDF points (origin at bottom-left).
 
-### Coordinate System (Unchanged)
+This separation means `form_offsets.toml` coordinates always describe the rightside-up form, regardless of which rotation mode is used at render time. The same offsets file works for all four rotation modes.
 
-Field positions in `form_offsets.toml` describe physical positions on the PDF page in millimeters from the top-left corner. The rotation flag controls text orientation at those positions rather than transforming position coordinates. This means field offsets must be calibrated for the actual physical page layout (with the form content in its rotated orientation).
+### Previous Prompt Answers Incorporated
+
+The following decisions from the human pilot are now reflected in the codebase.
+
+1. Automated generate-inspect-adjust loop: Open to it if feasible.
+2. Grid lines flag: Would be useful. Not yet implemented.
+3. NIF compile time: Acceptable. Feature gates deferred.
+4. Test strategy: Manual testing is sufficient for now.
 
 ---
 
 ## Questions for Human Review
 
-1. **Calibration accuracy.** The rotated calibration sample has been generated. Please inspect `secret/calibration_sample.pdf` to verify that the text is oriented correctly (readable when the page is rotated 90 degrees clockwise). If the text orientation is correct but field positions need adjustment, the next step is the generate-inspect-adjust calibration loop on `form_offsets.toml`.
+1. **Calibration accuracy.** Please inspect `secret/calibration_sample.pdf` to verify that text positions now align with the form fields on the rotated template. The coordinate transformation should place text in approximately the correct locations. Fine-tuning of individual field offsets in `form_offsets.toml` may still be needed.
 
-2. **Coordinate interpretation.** The current implementation treats `form_offsets.toml` coordinates as physical page positions (mm from top-left of the portrait page as rendered). The rotation flag only affects text angle, not position mapping. If the existing offsets were estimated for a rightside-up form layout, they will likely need significant revision to match the rotated form. Should the AI agent assist with re-estimating offsets for the rotated layout, or will the human pilot handle offset adjustments manually?
+2. **Grid lines mode.** You indicated a grid lines flag would be useful. Should the next prompt add a `--grid` flag to the CLI tool that overlays numbered grid lines (at regular mm intervals) on the template instead of field text? This would help with offset calibration.
 
-3. **Circle mark behavior.** For 90-degree rotations, the ellipse radii are swapped (radius_x becomes radius_y and vice versa) so the elongated axis follows the text direction. If this produces incorrect visual results in the calibration sample, the swap logic can be removed or refined.
+3. **Automated calibration.** You mentioned being open to an automated generate-inspect-adjust loop. Without computer vision capabilities, the AI agent cannot inspect the visual output of the PDF. The adjustment loop would need to be driven by human visual inspection. An alternative would be to generate multiple PDFs with systematic offset variations to narrow down correct positions. Would either approach be helpful?
 
 ---
 
 ## Notes
 
-- The `--rotation` flag is entirely optional. Omitting it produces identical behavior to the previous version (rightside-up, no rotation).
+- The form_offsets.toml coordinates remain unchanged. They describe the rightside-up form and are now correctly transformed at render time.
 - The existing dead code warning for the `form` field in the `Secrets` struct persists. This is pre-existing from V0.2-M1-P1.
