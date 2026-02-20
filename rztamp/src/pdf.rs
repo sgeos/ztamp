@@ -65,24 +65,40 @@ impl Rotation {
         }
     }
 
+    /// Return the form's natural dimensions given the PDF page dimensions.
+    ///
+    /// For a rightside-up or upside-down form, the form has the same
+    /// dimensions as the page. For 90-degree rotations, the form is
+    /// landscape (rotated to fit in portrait), so form width equals
+    /// page height and form height equals page width.
+    pub fn form_dimensions(self, page_w: f32, page_h: f32) -> (f32, f32) {
+        match self {
+            Rotation::Normal | Rotation::UpsideDown => (page_w, page_h),
+            Rotation::Ccw90 | Rotation::Cw90 => (page_h, page_w),
+        }
+    }
+
     /// Transform form-space coordinates to page-space coordinates.
     ///
     /// Form-space coordinates (fx, fy) are in millimeters from the top-left
     /// of the rightside-up form. Page-space coordinates (px, py) are in
     /// millimeters from the top-left of the physical PDF page.
     ///
-    /// For 90-degree rotations, the form's aspect ratio differs from the
-    /// page's, so coordinates are scaled proportionally.
+    /// For 90-degree rotations, the form is landscape (form_w = page_h,
+    /// form_h = page_w). The transform maps the form's coordinate range
+    /// onto the page without non-uniform scaling, producing square grid
+    /// cells.
     fn transform_position(self, fx: f32, fy: f32, page_w: f32, page_h: f32) -> (f32, f32) {
+        let (form_w, form_h) = self.form_dimensions(page_w, page_h);
         match self {
             Rotation::Normal => (fx, fy),
             Rotation::Ccw90 => (
-                fy * page_w / page_h,
-                page_h - fx * page_h / page_w,
+                fy * page_w / form_h,
+                page_h - fx * page_h / form_w,
             ),
             Rotation::Cw90 => (
-                page_w - fy * page_w / page_h,
-                fx * page_h / page_w,
+                page_w - fy * page_w / form_h,
+                fx * page_h / form_w,
             ),
             Rotation::UpsideDown => (
                 page_w - fx,
@@ -300,12 +316,15 @@ fn build_grid_ops(
     let color = config.color.to_pdf_color();
     let interval = config.interval_mm;
 
+    // Form dimensions differ from page dimensions for 90-degree rotations.
+    let (form_w, form_h) = rotation.form_dimensions(page_w, page_h);
+
     // Form-X grid lines: vertical lines in form-space (fx = constant).
-    // For each fx value, draw a line from (fx, 0) to (fx, page_h) in form-space.
+    // For each fx value, draw a line from (fx, 0) to (fx, form_h) in form-space.
     let mut fx = 0.0_f32;
-    while fx <= page_w {
+    while fx <= form_w {
         let (sx, sy) = rotation.transform_position(fx, 0.0, page_w, page_h);
-        let (ex, ey) = rotation.transform_position(fx, page_h, page_w, page_h);
+        let (ex, ey) = rotation.transform_position(fx, form_h, page_w, page_h);
 
         let pdf_sx = mm_to_pt(sx);
         let pdf_sy = mm_to_pt(page_h - sy);
@@ -339,11 +358,11 @@ fn build_grid_ops(
     }
 
     // Form-Y grid lines: horizontal lines in form-space (fy = constant).
-    // For each fy value, draw a line from (0, fy) to (page_w, fy) in form-space.
+    // For each fy value, draw a line from (0, fy) to (form_w, fy) in form-space.
     let mut fy = 0.0_f32;
-    while fy <= page_h {
+    while fy <= form_h {
         let (sx, sy) = rotation.transform_position(0.0, fy, page_w, page_h);
-        let (ex, ey) = rotation.transform_position(page_w, fy, page_w, page_h);
+        let (ex, ey) = rotation.transform_position(form_w, fy, page_w, page_h);
 
         let pdf_sx = mm_to_pt(sx);
         let pdf_sy = mm_to_pt(page_h - sy);

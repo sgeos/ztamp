@@ -10,26 +10,28 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 ## Comments
 
+Grid cells are not square.
+Y labels at the bottom of the page are only half visible.
+
+- Last X gridline is labelled x210.
+- Last Y gridline is labelled y270.
+
+This form has a landscape orientation that is rotated 90 degrees CCW.
+I get the feeling that there is a false assumption somewhere.
+
 Answers to questions in the reverse prompt.
 
-1. Text is nominally translated correctly, but placement on the form is totally wrong.
-2. Add a `--grid` flag. Interval and text color should be specifiable.
-   The grid should be above the form background, but below the text.
-3. Are there any computer vision solutions?
-   Is there a sane feedback loop for human adjustment?
-
-Positioning comments:
-
-- For most fields, X appears to be too large.
-- For most fields, Y appears to be too small.
-  For the bottom signature and date, Y is too large.
-- Spacing is slightly too distand for application rows.
+1. Grid lines and labels are visible and useful,
+   but grid does not appear to be correct.
+   `--grid 5` will probably better.
+2. Need to fix the grid before calibration makes sense.
+3. No need to sweep.
 
 ## Objectives
 
 ### Revise Fill Tool
 
-Attempt to adjust fill tool to add grid logic based on the above feedback.
+Attempt to adjust fill tool to correct the grid logic based on the above feedback.
 
 ### Repeat Calibaration Test
 
@@ -48,7 +50,7 @@ It is OK to use the same filename.
 
 - Revise fill tool based on feedback.
 - Sample output placed in `secret`
-- Comment on automated generate-inspect-adjust in the next reverse prompt.
+- Include the command to manually run to tool for a manual calibration loop.
 
 ## Notes
 

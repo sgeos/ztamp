@@ -9,79 +9,84 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.2-M1-P4 Grid Overlay
+**Task**: V0.2-M1-P5 Form Dimension Fix
 
 ---
 
 ## Verification
 
-### Grid Overlay (rztamp/src/pdf.rs)
+### Form Dimension Correction (rztamp/src/pdf.rs)
 
-A `GridConfig` struct and `build_grid_ops()` function were added. The grid draws lines at regular intervals in form-space coordinates, transformed to page-space using the active rotation. Each line is labeled with its form-space value.
+The false assumption was that the form had the same dimensions as the portrait PDF page (215.9mm x 279.4mm). The form is actually landscape (279.4mm wide x 215.9mm tall when read rightside-up), rotated 90 degrees CCW to fit in the portrait template image.
 
-For CCW 90 rotation, form-X grid lines appear as horizontal lines on the page (labeled "x0", "x10", "x20", ...), and form-Y grid lines appear as vertical lines (labeled "y0", "y10", "y20", ...). These labels correspond directly to the X and Y values in `form_offsets.toml`.
+A `form_dimensions()` method was added to the `Rotation` enum. For 90-degree rotations, it returns swapped dimensions: form_w = page_h (279.4), form_h = page_w (215.9).
 
-The grid is drawn between the background image and the text overlay, as requested. Grid lines use 0.3pt thickness and labels use 5pt font.
+The `transform_position()` formulas now use the correct form dimensions. For CCW 90, the transform simplifies to page_x = fy, page_y = page_h - fx, with no non-uniform scaling factors.
 
-### CLI Tool (tools/src/fill.rs)
+The grid iteration ranges were also corrected. Form-X now iterates from 0 to form_w (279.4) and form-Y from 0 to form_h (215.9). Grid cells are square.
 
-Two new optional flags were added.
+### Corrected Transform (CCW 90)
 
-```
-tanf-fill --offsets <path> --secrets <path> --template <path> --output <path>
-         [--rotation <mode>] [--grid <interval_mm>] [--grid-color <color>]
-```
-
-The `--grid` flag takes an interval in millimeters (e.g., `--grid 10` for 10mm spacing). The `--grid-color` flag accepts named colors: green (default), gray, red, blue, black, magenta, cyan.
+| Parameter | Old (incorrect) | New (correct) |
+|-----------|----------------|---------------|
+| form_w | 215.9 (= page_w) | 279.4 (= page_h) |
+| form_h | 279.4 (= page_h) | 215.9 (= page_w) |
+| page_x | fy * 0.773 | fy |
+| page_y | page_h - fx * 1.294 | page_h - fx |
+| Grid X range | 0 to 215.9 | 0 to 279.4 |
+| Grid Y range | 0 to 279.4 | 0 to 215.9 |
+| Grid cell shape | Rectangular (0.773 : 1.294) | Square (1 : 1) |
 
 ### Sample Output
 
-Generated at `secret/calibration_sample.pdf` (95,579 bytes, 112 text fields, 8 circle marks, 10mm grid, green, counter-clockwise rotation).
+Generated at `secret/calibration_sample.pdf` (100,584 bytes, 112 text fields, 8 circle marks, 5mm green grid, counter-clockwise rotation). Grid X labels run to x275, Y labels to y215. Grid cells are square.
 
 ---
 
-## Automated Generate-Inspect-Adjust
+## Manual Calibration Command
 
-The human pilot asked about computer vision solutions and a sane feedback loop for human adjustment.
+To regenerate the calibration PDF after editing `form_offsets.toml`, run the following from the repository root.
 
-### Computer Vision Options
+```
+rm -f secret/calibration_sample.pdf && tools/target/debug/tanf-fill \
+  --offsets assets/form/form_offsets.toml \
+  --secrets secret/secrets.toml \
+  --template assets/form/template.tiff \
+  --output secret/calibration_sample.pdf \
+  --rotation counter-clockwise \
+  --grid 5
+```
 
-Practical computer vision approaches for automated calibration are limited in this context. The core challenge is that the scanned form image is a 1-bit black-and-white bitmap with no structural metadata. Detecting field locations would require either optical character recognition (OCR) to locate label text and infer field positions, or template matching against known regions. Both approaches would require additional dependencies (such as `tesseract` for OCR or the `imageproc` crate for template matching) and substantial implementation effort. The accuracy of OCR on a 1-bit fax-encoded scan is uncertain.
+To rebuild after code changes, first run `cargo build --manifest-path tools/Cargo.toml`.
 
-Given the project's current scope, the practical cost of adding computer vision infrastructure is high relative to the manual calibration task, which involves approximately 40 field positions.
+The `--grid 5` flag produces a 5mm grid. Use `--grid 10` for coarser resolution or omit `--grid` entirely for a grid-free output. The `--grid-color` flag accepts named colors (green, gray, red, blue, black, magenta, cyan).
 
-### Recommended Human Calibration Workflow
+---
 
-The most reliable feedback loop uses the grid overlay with the following process.
+## Impact on form_offsets.toml
 
-1. Generate a calibration PDF with `--grid 10` (or `--grid 5` for finer resolution).
-2. Open the PDF and rotate it 90 degrees clockwise to read the form content rightside-up.
-3. For each field that needs adjustment, read the nearest grid line values.
-   - The "x" labels correspond to the X values in `form_offsets.toml`.
-   - The "y" labels correspond to the Y values in `form_offsets.toml`.
-4. Edit `form_offsets.toml` with the corrected values.
-5. Delete the old output and regenerate.
-6. Repeat until positions are accurate.
+The existing `form_offsets.toml` values were estimated for a portrait (215.9 x 279.4) coordinate system. With the corrected landscape interpretation, the form's coordinate ranges are different.
 
-For bulk adjustments, if most fields have a consistent offset error (e.g., all X values are 5mm too large), the human can apply a uniform correction to all X values in `form_offsets.toml`.
+| Axis | Old range | New range |
+|------|-----------|-----------|
+| X (form width) | 0 to 215.9 | 0 to 279.4 |
+| Y (form height) | 0 to 279.4 | 0 to 215.9 |
 
-### Alternative: Offset Sweep
+The existing offset values (x up to ~218, y up to ~234) were within the old portrait ranges. In the new landscape coordinate system, many values may fall outside the valid Y range (0 to 215.9) or may need significant adjustment.
 
-An automated approach without computer vision would generate multiple PDFs with systematic offset variations (e.g., a global X shift of -10, -5, 0, +5, +10 mm applied to all coordinates). The human inspects the set and identifies which shift produces the best alignment. This could be implemented as a `--sweep` mode if useful.
+Using the grid overlay, the human pilot can read the correct form-space coordinates for each field and update `form_offsets.toml` accordingly.
 
 ---
 
 ## Questions for Human Review
 
-1. **Grid readability.** Please inspect `secret/calibration_sample.pdf` to verify that the grid lines and labels are visible and useful. The labels show form-space coordinates ("x30" means form-space X=30mm). If the 10mm interval is too coarse or too fine, adjust with `--grid 5` or `--grid 20`.
+1. **Grid correctness.** Please inspect `secret/calibration_sample.pdf` to verify that grid cells are now square and that the X/Y ranges match the landscape form (X to ~279, Y to ~216). The grid labels should directly correspond to form_offsets.toml coordinate values.
 
-2. **Offset calibration.** With the grid visible, you can now read the form-space coordinates of actual field positions. Adjust `form_offsets.toml` values accordingly. If the current offsets have a systematic error (consistently off in one direction), please note the approximate magnitude so the AI agent can apply a bulk correction.
-
-3. **Sweep mode.** Would a `--sweep` mode that generates multiple PDFs with systematic offset shifts be helpful for finding the right global correction?
+2. **Offset re-estimation.** The existing form_offsets.toml values will likely need wholesale revision since the coordinate system has changed. Would it be helpful for the AI agent to clear the old offsets and provide a blank template, or should the human pilot manually update values using the grid?
 
 ---
 
 ## Notes
 
-- The `form_offsets.toml` coordinates remain unchanged from the initial visual estimates. They describe positions on the rightside-up form and are transformed at render time.
+- The `form_dimensions()` method is `pub` so it can be used by downstream code if needed.
 - The existing dead code warning for the `form` field in the `Secrets` struct persists. This is pre-existing from V0.2-M1-P1.
