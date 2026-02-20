@@ -1,15 +1,17 @@
 # Form Field Offsets for TANF Individual Job Search and Agreement
 #
-# Coordinate system: millimeters from the top-left corner of the page.
-# Page size: US Letter (215.9mm x 279.4mm).
+# Coordinate system: millimeters from the top-left corner of the
+# rightside-up form. The form is landscape (279.4mm x 215.9mm)
+# rotated 90 degrees CCW to fit in the portrait template image.
+#
+# Form dimensions: 279.4mm wide x 215.9mm tall (landscape).
+# Page dimensions: 215.9mm x 279.4mm (US Letter portrait).
 # Template image: assets/form/template.tiff (1704x2200 pixels, ~200 DPI).
 #
-# IMPORTANT: These offsets are initial estimates derived from visual inspection
-# of the scanned form. They require calibration against the template image
-# during PDF generation implementation (V0.2).
-#
-# Conversion from pixels to mm: pixel * (25.4 / 200) = mm
-# Conversion from mm to PDF points: mm * (72 / 25.4) = points
+# These offsets were rescaled from portrait estimates (V0.2-M1-P5)
+# to the corrected landscape coordinate system (V0.2-M1-P6).
+# X values stretched by 279.4/215.9, Y values squashed by 215.9/279.4.
+# Manual calibration against the grid overlay is required.
 
 [meta]
 page_width_mm = 215.9
@@ -22,64 +24,64 @@ template_dpi = 200
 # --- Header Fields (secret values from secrets.toml) ---
 
 [fields.case_name]
-x = 33.0
-y = 29.2
+x = 42.7
+y = 22.6
 width = 70.0
 font_size = 10
 
 [fields.upi_number]
-x = 107.0
-y = 29.2
+x = 138.5
+y = 22.6
 width = 40.0
 font_size = 10
 
 [fields.job_search_from]
-x = 91.0
-y = 40.6
+x = 117.8
+y = 31.4
 width = 25.0
 font_size = 10
 
 [fields.job_search_to]
-x = 120.0
-y = 40.6
+x = 155.3
+y = 31.4
 width = 25.0
 font_size = 10
 
 [fields.job_search_hours]
-x = 148.0
-y = 40.6
+x = 191.5
+y = 31.4
 width = 15.0
 font_size = 10
 
 [fields.submission_deadline_time]
-x = 89.0
-y = 44.5
+x = 115.2
+y = 34.4
 width = 20.0
 font_size = 10
 
 [fields.submission_deadline_date]
-x = 115.0
-y = 44.5
+x = 148.8
+y = 34.4
 width = 25.0
 font_size = 10
 
 [fields.submission_location]
-x = 143.0
-y = 44.5
+x = 185.1
+y = 34.4
 width = 30.0
 font_size = 10
 
 # --- Participant's Signature (Above Job Search Table) ---
 
 [fields.participant_signature_top]
-x = 30.0
-y = 72.0
+x = 38.8
+y = 55.6
 width = 80.0
 font_size = 10
 
 [fields.participant_signature_top_date]
-x = 120.0
-y = 72.0
+x = 155.3
+y = 55.6
 width = 30.0
 font_size = 10
 
@@ -91,52 +93,52 @@ font_size = 10
 # Row y positions are calculated as: table_first_row_y + (row - 1) * row_height.
 
 [table]
-first_row_y = 111.0
-row_height = 6.0
+first_row_y = 85.8
+row_height = 4.6
 row_count = 10
 
 [table.columns.date]
-x = 12.0
+x = 15.5
 width = 20.0
 font_size = 9
 
 [table.columns.employer_name_address]
-x = 42.0
+x = 54.4
 width = 68.0
 font_size = 9
 
 [table.columns.how_contact_made]
-x = 112.0
+x = 145.0
 width = 18.0
 font_size = 9
 
 [table.columns.telephone_fax]
-x = 132.0
+x = 170.8
 width = 16.0
 font_size = 9
 
 [table.columns.telephone_number]
-x = 150.0
+x = 194.1
 width = 28.0
 font_size = 8
 
 [table.columns.internet_confirmation]
-x = 180.0
+x = 232.9
 width = 14.0
 font_size = 9
 
 [table.columns.time_in]
-x = 196.0
+x = 253.6
 width = 10.0
 font_size = 9
 
 [table.columns.time_out]
-x = 207.0
+x = 267.9
 width = 10.0
 font_size = 9
 
 [table.columns.office_use_only]
-x = 218.0
+x = 282.1
 width = 0.0
 font_size = 9
 # Note: Office Use Only column is at the right edge. Not populated by the applicant.
@@ -144,132 +146,132 @@ font_size = 9
 # --- "Should you become employed" Section ---
 
 [fields.employed_name_address_line1]
-x = 12.0
-y = 177.0
+x = 15.5
+y = 136.8
 width = 80.0
 font_size = 9
 
 [fields.employed_name_address_line2]
-x = 12.0
-y = 182.0
+x = 15.5
+y = 140.6
 width = 80.0
 font_size = 9
 
 [fields.employed_name_address_line3]
-x = 12.0
-y = 187.0
+x = 15.5
+y = 144.5
 width = 80.0
 font_size = 9
 
 [fields.employed_telephone]
-x = 12.0
-y = 192.0
+x = 15.5
+y = 148.4
 width = 80.0
 font_size = 9
 
 [fields.employed_start_date]
-x = 108.0
-y = 177.0
+x = 139.8
+y = 136.8
 width = 25.0
 font_size = 9
 
 [fields.employed_hours_per_week]
-x = 150.0
-y = 177.0
+x = 194.1
+y = 136.8
 width = 20.0
 font_size = 9
 
 [fields.employed_hourly_rate]
-x = 185.0
-y = 177.0
+x = 239.4
+y = 136.8
 width = 20.0
 font_size = 9
 
 # How often paid: one of "Weekly", "Bi-weekly", "Semi-monthly", "Monthly".
 # These are circle-one options. The x,y positions mark the center of each option.
 [fields.employed_pay_frequency_weekly]
-x = 118.0
-y = 182.0
+x = 152.7
+y = 140.6
 font_size = 9
 
 [fields.employed_pay_frequency_biweekly]
-x = 135.0
-y = 182.0
+x = 174.7
+y = 140.6
 font_size = 9
 
 [fields.employed_pay_frequency_semimonthly]
-x = 156.0
-y = 182.0
+x = 201.9
+y = 140.6
 font_size = 9
 
 [fields.employed_pay_frequency_monthly]
-x = 180.0
-y = 182.0
+x = 232.9
+y = 140.6
 font_size = 9
 
 # Date of first check: three fields (month / day / year).
 [fields.employed_first_check_month]
-x = 118.0
-y = 187.0
+x = 152.7
+y = 144.5
 width = 10.0
 font_size = 9
 
 [fields.employed_first_check_day]
-x = 130.0
-y = 187.0
+x = 168.2
+y = 144.5
 width = 10.0
 font_size = 9
 
 [fields.employed_first_check_year]
-x = 142.0
-y = 187.0
+x = 183.8
+y = 144.5
 width = 10.0
 font_size = 9
 
 [fields.employed_tips]
-x = 155.0
-y = 187.0
+x = 200.6
+y = 144.5
 width = 15.0
 font_size = 9
 
 [fields.employed_job_title]
-x = 178.0
-y = 187.0
+x = 230.4
+y = 144.5
 width = 30.0
 font_size = 9
 
 # Insurance: one of "None", "Employer Paid", "Employee Paid", "Both Paid".
 # Circle-one options.
 [fields.employed_insurance_none]
-x = 118.0
-y = 192.0
+x = 152.7
+y = 148.4
 font_size = 9
 
 [fields.employed_insurance_employer_paid]
-x = 138.0
-y = 192.0
+x = 178.6
+y = 148.4
 font_size = 9
 
 [fields.employed_insurance_employee_paid]
-x = 162.0
-y = 192.0
+x = 209.6
+y = 148.4
 font_size = 9
 
 [fields.employed_insurance_both_paid]
-x = 186.0
-y = 192.0
+x = 240.7
+y = 148.4
 font_size = 9
 
 # --- Participant's Signature (Bottom of Form) ---
 
 [fields.participant_signature_bottom]
-x = 30.0
-y = 234.0
+x = 38.8
+y = 180.8
 width = 80.0
 font_size = 10
 
 [fields.participant_signature_bottom_date]
-x = 130.0
-y = 234.0
+x = 168.2
+y = 180.8
 width = 30.0
 font_size = 10

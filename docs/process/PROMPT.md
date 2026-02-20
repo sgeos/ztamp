@@ -10,28 +10,23 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 ## Comments
 
-Grid cells are not square.
-Y labels at the bottom of the page are only half visible.
-
-- Last X gridline is labelled x210.
-- Last Y gridline is labelled y270.
-
-This form has a landscape orientation that is rotated 90 degrees CCW.
-I get the feeling that there is a false assumption somewhere.
-
 Answers to questions in the reverse prompt.
 
-1. Grid lines and labels are visible and useful,
-   but grid does not appear to be correct.
-   `--grid 5` will probably better.
-2. Need to fix the grid before calibration makes sense.
-3. No need to sweep.
+1. Grid cells appear to be square.
+   Dimensions appear to be about 279 or 280 and 211 or 212.
+2. I think it would make sesne to stretch X offsets,
+   and squash Y offsets according to the new coordinate system.
+   I think it will have to manually adjust from there.
 
 ## Objectives
 
-### Revise Fill Tool
+### Revise Field Offsets
 
-Attempt to adjust fill tool to correct the grid logic based on the above feedback.
+Revise field offsets.
+According to the new coordinate system:
+
+- Stretch X offsets.
+- Squash Y offsets.
 
 ### Repeat Calibaration Test
 
@@ -48,8 +43,8 @@ It is OK to use the same filename.
 
 ## Success Criteria
 
-- Revise fill tool based on feedback.
-- Sample output placed in `secret`
+- Revise field offsets.
+- Sample output placed in `secret`.
 - Include the command to manually run to tool for a manual calibration loop.
 
 ## Notes

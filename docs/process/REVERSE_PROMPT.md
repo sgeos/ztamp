@@ -9,37 +9,39 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.2-M1-P5 Form Dimension Fix
+**Task**: V0.2-M1-P6 Offset Rescaling
 
 ---
 
 ## Verification
 
-### Form Dimension Correction (rztamp/src/pdf.rs)
+### Offset Rescaling (assets/form/form_offsets.toml)
 
-The false assumption was that the form had the same dimensions as the portrait PDF page (215.9mm x 279.4mm). The form is actually landscape (279.4mm wide x 215.9mm tall when read rightside-up), rotated 90 degrees CCW to fit in the portrait template image.
+All coordinate values in `form_offsets.toml` were rescaled from the old portrait coordinate system (215.9mm x 279.4mm) to the corrected landscape coordinate system (279.4mm x 215.9mm).
 
-A `form_dimensions()` method was added to the `Rotation` enum. For 90-degree rotations, it returns swapped dimensions: form_w = page_h (279.4), form_h = page_w (215.9).
+| Parameter | Scale Factor | Formula |
+|-----------|-------------|---------|
+| All X values | 1.2941 (stretch) | new_x = old_x * 279.4 / 215.9 |
+| All Y values | 0.7727 (squash) | new_y = old_y * 215.9 / 279.4 |
+| Table first_row_y | 0.7727 (squash) | 111.0 to 85.8 |
+| Table row_height | 0.7727 (squash) | 6.0 to 4.6 |
+| Table column X values | 1.2941 (stretch) | Scaled same as field X values |
+| Widths, font sizes | unchanged | Not affected by coordinate system change |
 
-The `transform_position()` formulas now use the correct form dimensions. For CCW 90, the transform simplifies to page_x = fy, page_y = page_h - fx, with no non-uniform scaling factors.
+### Sample Rescaled Values
 
-The grid iteration ranges were also corrected. Form-X now iterates from 0 to form_w (279.4) and form-Y from 0 to form_h (215.9). Grid cells are square.
-
-### Corrected Transform (CCW 90)
-
-| Parameter | Old (incorrect) | New (correct) |
-|-----------|----------------|---------------|
-| form_w | 215.9 (= page_w) | 279.4 (= page_h) |
-| form_h | 279.4 (= page_h) | 215.9 (= page_w) |
-| page_x | fy * 0.773 | fy |
-| page_y | page_h - fx * 1.294 | page_h - fx |
-| Grid X range | 0 to 215.9 | 0 to 279.4 |
-| Grid Y range | 0 to 279.4 | 0 to 215.9 |
-| Grid cell shape | Rectangular (0.773 : 1.294) | Square (1 : 1) |
+| Field | Old X | New X | Old Y | New Y |
+|-------|-------|-------|-------|-------|
+| case_name | 33.0 | 42.7 | 29.2 | 22.6 |
+| upi_number | 107.0 | 138.5 | 29.2 | 22.6 |
+| signature_top | 30.0 | 38.8 | 72.0 | 55.6 |
+| signature_bottom | 30.0 | 38.8 | 234.0 | 180.8 |
+| table date col | 12.0 | 15.5 | - | - |
+| table time_out col | 207.0 | 267.9 | - | - |
 
 ### Sample Output
 
-Generated at `secret/calibration_sample.pdf` (100,584 bytes, 112 text fields, 8 circle marks, 5mm green grid, counter-clockwise rotation). Grid X labels run to x275, Y labels to y215. Grid cells are square.
+Generated at `secret/calibration_sample.pdf` (100,615 bytes, 112 text fields, 8 circle marks, 5mm green grid, counter-clockwise rotation).
 
 ---
 
@@ -63,30 +65,28 @@ The `--grid 5` flag produces a 5mm grid. Use `--grid 10` for coarser resolution 
 
 ---
 
-## Impact on form_offsets.toml
+## Observations
 
-The existing `form_offsets.toml` values were estimated for a portrait (215.9 x 279.4) coordinate system. With the corrected landscape interpretation, the form's coordinate ranges are different.
+The rescaled offsets are a linear proportional adjustment. They will not be pixel-accurate because the original estimates were approximate to begin with. The grid overlay allows the human pilot to read correct form-space coordinates and fine-tune each field position.
 
-| Axis | Old range | New range |
-|------|-----------|-----------|
-| X (form width) | 0 to 215.9 | 0 to 279.4 |
-| Y (form height) | 0 to 279.4 | 0 to 215.9 |
+Areas likely needing manual attention include the following.
 
-The existing offset values (x up to ~218, y up to ~234) were within the old portrait ranges. In the new landscape coordinate system, many values may fall outside the valid Y range (0 to 215.9) or may need significant adjustment.
-
-Using the grid overlay, the human pilot can read the correct form-space coordinates for each field and update `form_offsets.toml` accordingly.
+- **Table row spacing.** The row_height scaled from 6.0mm to 4.6mm. If the physical row height on the form does not match this proportion, rows will drift progressively. The 5mm grid makes it straightforward to measure actual row spacing.
+- **Circle-one options.** The pay frequency and insurance option positions were spaced at fixed intervals in the old system. After rescaling, verify that each option label aligns with its corresponding text on the form.
+- **Right-edge columns.** The office_use_only column (x=282.1mm) slightly exceeds the form width (279.4mm). This column is not populated by the applicant and can be ignored or adjusted.
 
 ---
 
 ## Questions for Human Review
 
-1. **Grid correctness.** Please inspect `secret/calibration_sample.pdf` to verify that grid cells are now square and that the X/Y ranges match the landscape form (X to ~279, Y to ~216). The grid labels should directly correspond to form_offsets.toml coordinate values.
+1. **Offset accuracy.** Please inspect `secret/calibration_sample.pdf` against the form template. Are the rescaled field positions approximately correct, or do they need wholesale repositioning?
 
-2. **Offset re-estimation.** The existing form_offsets.toml values will likely need wholesale revision since the coordinate system has changed. Would it be helpful for the AI agent to clear the old offsets and provide a blank template, or should the human pilot manually update values using the grid?
+2. **Table row height.** Does the rescaled row_height (4.6mm) match the actual row spacing on the form? If not, what value appears correct from the grid?
 
 ---
 
 ## Notes
 
-- The `form_dimensions()` method is `pub` so it can be used by downstream code if needed.
-- The existing dead code warning for the `form` field in the `Secrets` struct persists. This is pre-existing from V0.2-M1-P1.
+- The file header comment in `form_offsets.toml` was updated to describe the landscape coordinate system.
+- The meta section (page_width_mm, page_height_mm) is unchanged because those values describe the physical page, not the form. The code derives form dimensions via `rotation.form_dimensions()`.
+- The pre-existing dead code warning for the `form` field in the `Secrets` struct persists (from V0.2-M1-P1).
