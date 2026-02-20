@@ -123,6 +123,20 @@ pub struct GridConfig {
     pub label_font_size: f32,
 }
 
+/// Configuration for a diagonal watermark overlay.
+///
+/// The watermark is rendered on top of all other content as large
+/// diagonal text across the page.
+#[derive(Debug, Clone)]
+pub struct WatermarkConfig {
+    /// Watermark text (e.g., "TEST SAMPLE").
+    pub text: String,
+    /// Text color.
+    pub color: TextColor,
+    /// Font size in points.
+    pub font_size: f32,
+}
+
 /// A circle to draw on the form (for "circle one" options).
 #[derive(Debug)]
 pub struct CircleMark {
@@ -158,6 +172,7 @@ pub struct CircleMark {
 /// * `circle_marks` - Circles to draw on the form.
 /// * `rotation` - How the form content is rotated in the template image.
 /// * `grid` - Optional grid overlay for calibration.
+/// * `watermark` - Optional diagonal watermark text on top of all content.
 ///
 /// # Errors
 ///
@@ -171,6 +186,7 @@ pub fn generate_form_pdf(
     circle_marks: &[CircleMark],
     rotation: Rotation,
     grid: Option<&GridConfig>,
+    watermark: Option<&WatermarkConfig>,
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut doc = PdfDocument::new("TANF Job Search Form");
     let mut warnings: Vec<PdfWarnMsg> = Vec::new();
@@ -289,6 +305,34 @@ pub fn generate_form_pdf(
         ops.push(Op::SetOutlineColor { col: circle.color.to_pdf_color() });
         ops.push(Op::SetOutlineThickness { pt: Pt(1.0) });
         ops.push(Op::DrawLine { line });
+    }
+
+    // Draw watermark on top of all other content.
+    if let Some(wm) = watermark {
+        let center_x = mm_to_pt(page_width_mm / 2.0);
+        let center_y = mm_to_pt(page_height_mm / 2.0);
+        // Estimate text width to offset the starting position so
+        // the text is roughly centered on the page.
+        let text_width_pt = wm.text.len() as f32 * wm.font_size * 0.5;
+        let angle: f32 = 45.0;
+        let angle_rad = angle.to_radians();
+        let start_x = center_x - (text_width_pt / 2.0) * angle_rad.cos();
+        let start_y = center_y - (text_width_pt / 2.0) * angle_rad.sin();
+
+        ops.push(Op::StartTextSection);
+        ops.push(Op::SetFillColor { col: wm.color.to_pdf_color() });
+        ops.push(Op::SetFont { font: font_handle.clone(), size: Pt(wm.font_size) });
+        ops.push(Op::SetTextMatrix {
+            matrix: TextMatrix::TranslateRotate(
+                Pt(start_x),
+                Pt(start_y),
+                angle,
+            ),
+        });
+        ops.push(Op::ShowText {
+            items: vec![TextItem::Text(wm.text.clone())],
+        });
+        ops.push(Op::EndTextSection);
     }
 
     let page = PdfPage::new(Mm(page_width_mm), Mm(page_height_mm), ops);
@@ -411,6 +455,10 @@ fn mm_to_pt(mm: f32) -> f32 {
 ///
 /// When `show_circle_labels` is false, text labels for circle-one options
 /// are omitted. The ellipses are still drawn.
+///
+/// When `circle_all` is true, all circle-one options get ellipses. When
+/// false, only the default selected option in each series is circled
+/// (pay frequency: Weekly, insurance: None).
 pub fn build_calibration_fields(
     offsets: &FormOffsets,
     values: &std::collections::HashMap<String, String>,
@@ -418,6 +466,7 @@ pub fn build_calibration_fields(
     row_color_a: TextColor,
     row_color_b: TextColor,
     show_circle_labels: bool,
+    circle_all: bool,
 ) -> (Vec<TextField>, Vec<CircleMark>) {
     let mut text_fields = Vec::new();
     let mut circle_marks = Vec::new();
@@ -434,16 +483,20 @@ pub fn build_calibration_fields(
             .unwrap_or_else(|| name.to_uppercase());
 
         if is_circle_option(name) {
-            // Circle options: draw ellipse around the option text.
-            let rx = estimate_text_width(&text, offset.font_size) / 2.0 + 1.5;
-            let ry = offset.font_size * 0.0353 * 10.0 / 2.0 + 0.5;
-            circle_marks.push(CircleMark {
-                center_x_mm: offset.x + rx - 1.5,
-                center_y_mm: offset.y,
-                radius_x_mm: rx,
-                radius_y_mm: ry,
-                color: header_color,
-            });
+            let draw_ellipse = circle_all || is_default_selected(name);
+
+            if draw_ellipse {
+                // Draw ellipse around the option text.
+                let rx = estimate_text_width(&text, offset.font_size) / 2.0 + 1.5;
+                let ry = offset.font_size * 0.0353 * 10.0 / 2.0 + 0.5;
+                circle_marks.push(CircleMark {
+                    center_x_mm: offset.x + rx - 1.5,
+                    center_y_mm: offset.y,
+                    radius_x_mm: rx,
+                    radius_y_mm: ry,
+                    color: header_color,
+                });
+            }
 
             // Skip label text when labels are disabled.
             if !show_circle_labels {
@@ -497,6 +550,14 @@ pub fn build_calibration_fields(
 fn is_circle_option(name: &str) -> bool {
     name.starts_with("employed_pay_frequency_")
         || name.starts_with("employed_insurance_")
+}
+
+/// Check if a circle-one option is the default selected in its series.
+///
+/// Used when `circle_all` is false to circle only one option per series.
+fn is_default_selected(name: &str) -> bool {
+    name == "employed_pay_frequency_weekly"
+        || name == "employed_insurance_none"
 }
 
 /// Compute an aligned x position within a field width.

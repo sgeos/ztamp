@@ -16,20 +16,39 @@ Answers to questions in the reverse prompt.
 
 ## Objectives
 
-### Black Text PoC
+### Update Export Tool
 
-Please generate a PoC with the following properties.
+Add a `--watermark` flag that accepts a color.
+When used, "TEST SAMPLE" is printed diagonally above everything else
+in the specified color.
+
+### Generate Three PoC File In Preparation for Concatenation
+
+Each file should have a different name.
+
+#### Almost Production PoC
 
 - No grid.
 - All text is black.
 - No ellipse labels.
-- Signature dates are "01/01/2001"
-- If employed start date and first check years are 2001.
+- Only one ellipse in each series is circled.
+- Red watermark.
 
-### Repeat Calibaration Test
+#### Black Text Testing PoC
 
-Repeat calibration test for the next iteration of form output.
-It is OK to use the same filename.
+- No grid.
+- All text is black.
+- No ellipse labels.
+- All ellipses in each series circled.
+- Red watermark.
+
+#### Debug PoC
+
+- Green grid.
+- Debug colors for text.
+- Ellipse labels.
+- All ellipses in each series circled.
+- Red watermark.
 
 ## Context
 
@@ -41,8 +60,8 @@ It is OK to use the same filename.
 
 ## Success Criteria
 
-- If employed dates modifed.
-- Latest calibration test exported.
+- Watermark flag added to export tool.
+- Three PoCs generated.
 
 ## Notes
 

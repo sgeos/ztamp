@@ -29,7 +29,7 @@ use std::process;
 use serde::Deserialize;
 
 use rztamp::offsets;
-use rztamp::pdf::{self, GridConfig, Rotation, TextColor};
+use rztamp::pdf::{self, GridConfig, Rotation, TextColor, WatermarkConfig};
 
 /// Secrets file structure.
 #[derive(Debug, Deserialize)]
@@ -77,6 +77,8 @@ struct Args {
     grid_color: TextColor,
     text_color: Option<TextColor>,
     show_labels: bool,
+    circle_all: bool,
+    watermark_color: Option<TextColor>,
 }
 
 fn parse_args() -> Args {
@@ -103,6 +105,8 @@ fn parse_args() -> Args {
     let mut grid_color = TextColor { r: 0.0, g: 0.6, b: 0.0 }; // default green
     let mut text_color: Option<TextColor> = None;
     let mut show_labels = false;
+    let mut circle_all = false;
+    let mut watermark_color: Option<TextColor> = None;
 
     let mut i = 1;
     while i < args.len() {
@@ -163,6 +167,17 @@ fn parse_args() -> Args {
             "--labels" => {
                 show_labels = true;
             }
+            "--circle-all" => {
+                circle_all = true;
+            }
+            "--watermark" => {
+                i += 1;
+                watermark_color = Some(parse_color(&args[i]).unwrap_or_else(|| {
+                    eprintln!("Unknown watermark color: {}", args[i]);
+                    eprintln!("Valid colors: green, gray, red, blue, black, magenta, cyan");
+                    process::exit(1);
+                }));
+            }
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
@@ -194,6 +209,8 @@ fn parse_args() -> Args {
         grid_color,
         text_color,
         show_labels,
+        circle_all,
+        watermark_color,
     }
 }
 
@@ -261,6 +278,7 @@ fn main() {
         row_color_a,
         row_color_b,
         args.show_labels,
+        args.circle_all,
     );
 
     let rotation_label = match args.rotation {
@@ -280,6 +298,16 @@ fn main() {
         }
     });
 
+    // Build optional watermark config.
+    let watermark_config = args.watermark_color.map(|color| {
+        eprintln!("Watermark enabled: TEST SAMPLE");
+        WatermarkConfig {
+            text: "TEST SAMPLE".to_string(),
+            color,
+            font_size: 72.0,
+        }
+    });
+
     eprintln!(
         "Generating PDF with {} text fields, {} circle marks, rotation: {}...",
         text_fields.len(), circle_marks.len(), rotation_label
@@ -295,6 +323,7 @@ fn main() {
         &circle_marks,
         args.rotation,
         grid_config.as_ref(),
+        watermark_config.as_ref(),
     ).unwrap_or_else(|e| {
         eprintln!("Failed to generate PDF: {e}");
         process::exit(1);
