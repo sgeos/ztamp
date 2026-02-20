@@ -10,26 +10,23 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 ## Comments
 
-(none)
+The form itself is rotated 90 degress counter clockwise.
 
 ## Objectives
 
-### Merge V0.1 Branch Into Main
+### Revise Fill Tool
 
-Merge V0.1 branch into main.
+Add flags for filling out rotated forms, if possible.
 
-### Attempt V0.2 PoC
+- rightside-up (default)
+- clockwise (90 degrees)
+- counter-clockwise (90 degrees)
+- upside-down
 
-- Put portable logic in `rztamp`.
-- Generate a Rust-based CLI tool that can fill out all fields.
-  - `printpdf` based.
-  - CLI tool repo lives in `tools`. New project that pulls in `rztamp` as a dependency.
-  - Colored text can be printed.
-- Use tool to generate sample output file in `secret`.
-  - Use red text for non-job search fields.
-  - Circle all options.
-  - Alternate between blue and magenta for job search rows.
-  - Output should not overwrite existing files.
+### Repeat Calibaration Test
+
+Repeat calibration test for form that is 90 degrees counter clockwise.
+It is OK to use the same filename.
 
 ## Context
 
@@ -41,8 +38,7 @@ Merge V0.1 branch into main.
 
 ## Success Criteria
 
-- V0.1 merged into main.
-- Rust-based CLI tool generated.
+- Revise fill tool to add flags to fill out rotated forms, if possible.
 - Sample output placed in `secret`
 
 ## Notes

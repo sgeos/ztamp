@@ -36,6 +36,36 @@ pub struct TextField {
     pub color: TextColor,
 }
 
+/// Form content rotation relative to the PDF page.
+///
+/// Describes how the form content is oriented in the template image.
+/// The tool rotates text and adjusts circle radii to match the form's
+/// orientation.
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub enum Rotation {
+    /// Form content is rightside-up (no rotation needed).
+    #[default]
+    Normal,
+    /// Form content is rotated 90 degrees counter-clockwise.
+    Ccw90,
+    /// Form content is rotated 90 degrees clockwise.
+    Cw90,
+    /// Form content is rotated 180 degrees (upside-down).
+    UpsideDown,
+}
+
+impl Rotation {
+    /// Text rotation angle in degrees for `TextMatrix::TranslateRotate`.
+    fn text_angle_degrees(self) -> f32 {
+        match self {
+            Rotation::Normal => 0.0,
+            Rotation::Ccw90 => 90.0,
+            Rotation::Cw90 => 270.0,
+            Rotation::UpsideDown => 180.0,
+        }
+    }
+}
+
 /// A circle to draw on the form (for "circle one" options).
 #[derive(Debug)]
 pub struct CircleMark {
@@ -55,6 +85,11 @@ pub struct CircleMark {
 /// top-left corner of the page. This function converts them to PDF coordinates
 /// (origin at bottom-left).
 ///
+/// When `rotation` is not `Normal`, text is rendered at the specified angle
+/// to match form content that is rotated within the template image. Circle
+/// radii are swapped for 90-degree rotations so the ellipse aligns with
+/// the text direction.
+///
 /// # Arguments
 ///
 /// * `template_image_bytes` - Raw bytes of the template image (TIFF or PNG).
@@ -63,6 +98,7 @@ pub struct CircleMark {
 /// * `page_height_mm` - Page height in millimeters.
 /// * `text_fields` - Text items to overlay on the form.
 /// * `circle_marks` - Circles to draw on the form.
+/// * `rotation` - How the form content is rotated in the template image.
 ///
 /// # Errors
 ///
@@ -74,6 +110,7 @@ pub fn generate_form_pdf(
     page_height_mm: f32,
     text_fields: &[TextField],
     circle_marks: &[CircleMark],
+    rotation: Rotation,
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut doc = PdfDocument::new("TANF Job Search Form");
     let mut warnings: Vec<PdfWarnMsg> = Vec::new();
@@ -101,6 +138,7 @@ pub fn generate_form_pdf(
     let font_handle = PdfFontHandle::Builtin(BuiltinFont::Helvetica);
 
     // Overlay text fields.
+    let text_angle = rotation.text_angle_degrees();
     for field in text_fields {
         let pdf_x = mm_to_pt(field.x_mm);
         let pdf_y = mm_to_pt(page_height_mm - field.y_mm);
@@ -108,12 +146,22 @@ pub fn generate_form_pdf(
         ops.push(Op::StartTextSection);
         ops.push(Op::SetFillColor { col: field.color.to_pdf_color() });
         ops.push(Op::SetFont { font: font_handle.clone(), size: Pt(field.font_size) });
-        ops.push(Op::SetTextCursor {
-            pos: Point {
-                x: Pt(pdf_x),
-                y: Pt(pdf_y),
-            },
-        });
+        if rotation == Rotation::Normal {
+            ops.push(Op::SetTextCursor {
+                pos: Point {
+                    x: Pt(pdf_x),
+                    y: Pt(pdf_y),
+                },
+            });
+        } else {
+            ops.push(Op::SetTextMatrix {
+                matrix: TextMatrix::TranslateRotate(
+                    Pt(pdf_x),
+                    Pt(pdf_y),
+                    text_angle,
+                ),
+            });
+        }
         ops.push(Op::ShowText {
             items: vec![TextItem::Text(field.text.clone())],
         });
@@ -121,11 +169,19 @@ pub fn generate_form_pdf(
     }
 
     // Draw circle marks.
+    // Swap ellipse radii for 90-degree rotations so the major axis
+    // aligns with the rotated text direction.
     for circle in circle_marks {
         let cx = mm_to_pt(circle.center_x_mm);
         let cy = mm_to_pt(page_height_mm - circle.center_y_mm);
-        let rx = mm_to_pt(circle.radius_x_mm);
-        let ry = mm_to_pt(circle.radius_y_mm);
+        let (rx_mm, ry_mm) = match rotation {
+            Rotation::Ccw90 | Rotation::Cw90 => (circle.radius_y_mm, circle.radius_x_mm),
+            Rotation::Normal | Rotation::UpsideDown => {
+                (circle.radius_x_mm, circle.radius_y_mm)
+            }
+        };
+        let rx = mm_to_pt(rx_mm);
+        let ry = mm_to_pt(ry_mm);
 
         // Approximate an ellipse with 4 bezier curves.
         let kappa: f32 = 0.5522848;

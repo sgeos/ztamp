@@ -5,6 +5,9 @@
 //!
 //! Usage:
 //!     tanf-fill --offsets <path> --secrets <path> --template <path> --output <path>
+//!              [--rotation <mode>]
+//!
+//! Rotation modes: rightside-up (default), counter-clockwise, clockwise, upside-down
 //!
 //! For calibration mode, uses colored text:
 //! - Red for non-job-search fields
@@ -19,7 +22,7 @@ use std::process;
 use serde::Deserialize;
 
 use rztamp::offsets;
-use rztamp::pdf::{self, TextColor};
+use rztamp::pdf::{self, Rotation, TextColor};
 
 /// Secrets file structure.
 #[derive(Debug, Deserialize)]
@@ -62,13 +65,18 @@ struct Args {
     secrets_path: PathBuf,
     template_path: PathBuf,
     output_path: PathBuf,
+    rotation: Rotation,
 }
 
 fn parse_args() -> Args {
     let args: Vec<String> = std::env::args().collect();
 
     if args.len() < 9 {
-        eprintln!("Usage: tanf-fill --offsets <path> --secrets <path> --template <path> --output <path>");
+        eprintln!(
+            "Usage: tanf-fill --offsets <path> --secrets <path> \
+             --template <path> --output <path> [--rotation <mode>]"
+        );
+        eprintln!("  Rotation modes: rightside-up (default), counter-clockwise, clockwise, upside-down");
         process::exit(1);
     }
 
@@ -76,6 +84,7 @@ fn parse_args() -> Args {
     let mut secrets_path = None;
     let mut template_path = None;
     let mut output_path = None;
+    let mut rotation = Rotation::Normal;
 
     let mut i = 1;
     while i < args.len() {
@@ -95,6 +104,20 @@ fn parse_args() -> Args {
             "--output" => {
                 i += 1;
                 output_path = Some(PathBuf::from(&args[i]));
+            }
+            "--rotation" => {
+                i += 1;
+                rotation = match args[i].as_str() {
+                    "rightside-up" => Rotation::Normal,
+                    "counter-clockwise" => Rotation::Ccw90,
+                    "clockwise" => Rotation::Cw90,
+                    "upside-down" => Rotation::UpsideDown,
+                    other => {
+                        eprintln!("Unknown rotation mode: {other}");
+                        eprintln!("Valid modes: rightside-up, counter-clockwise, clockwise, upside-down");
+                        process::exit(1);
+                    }
+                };
             }
             other => {
                 eprintln!("Unknown argument: {other}");
@@ -122,6 +145,7 @@ fn parse_args() -> Args {
         secrets_path: secrets_path.unwrap(),
         template_path: template_path.unwrap(),
         output_path: output_path.unwrap(),
+        rotation,
     }
 }
 
@@ -171,8 +195,16 @@ fn main() {
         TextColor::MAGENTA,
     );
 
-    eprintln!("Generating PDF with {} text fields and {} circle marks...",
-        text_fields.len(), circle_marks.len());
+    let rotation_label = match args.rotation {
+        Rotation::Normal => "rightside-up",
+        Rotation::Ccw90 => "counter-clockwise (90 degrees)",
+        Rotation::Cw90 => "clockwise (90 degrees)",
+        Rotation::UpsideDown => "upside-down (180 degrees)",
+    };
+    eprintln!(
+        "Generating PDF with {} text fields, {} circle marks, rotation: {}...",
+        text_fields.len(), circle_marks.len(), rotation_label
+    );
 
     // Generate PDF.
     let pdf_bytes = pdf::generate_form_pdf(
@@ -182,6 +214,7 @@ fn main() {
         form_offsets.meta.page_height_mm,
         &text_fields,
         &circle_marks,
+        args.rotation,
     ).unwrap_or_else(|e| {
         eprintln!("Failed to generate PDF: {e}");
         process::exit(1);
