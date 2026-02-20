@@ -9,88 +9,72 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-20
-**Task**: V0.4-M1-P3 UI Improvements and Schema Migration
+**Task**: V0.5-M1-P4 Bug Fixes and PDF Export
 
 ---
 
 ## Verification
 
-### V0.4 Merged into Main
+### Bug Fixes
 
-The `feat/v04-screenshot-capture` branch was fast-forwarded into `main`. Work continues on `feat/v05-ui-improvements`.
+| Fix | Detail |
+|-----|--------|
+| How Contact Made default | Changed from "Online" to "Internet" in `default_attrs/0` and the template select options. |
+| Date filtering crash | `handle_event("filter_entries", ...)` now uses `Map.get(params, key, "")` instead of pattern matching, which failed when disabled inputs did not submit values. |
+| Employer display | Added `format_employer/1` function that replicates the migration down-function formatting (recruiter, remote, combined) for the Captured Entries table. |
 
-### Database Migration
+### PDF Export
 
-The `employer_name_address` column has been split into `employer_name` and `employer_address`. Two new boolean columns have been added: `applied_via_recruiter` (default false) and `remote` (default false). All 23 existing entries are preserved with `employer_name` populated from the old column and `employer_address` set to empty string.
+The Export PDF button is now functional. Clicking it generates a complete proof-of-job-search PDF packet in `secret/`.
 
-The `down` migration reconstructs `employer_name_address` with formatting rules:
-- Normal: "NAME, ADDRESS"
-- Recruiter: "Unknown (applied via NAME), ADDRESS"
-- Remote: "NAME, ADDRESS (remote)"
-- Both: "Unknown (applied via NAME), ADDRESS (remote)"
+#### Packet Structure
 
-### Form Changes
+1. **Cover page** with name, UPI, period, application count, recruiter count, total time, and submission deadline.
+2. **TANF form pages** with the template.tiff background, header fields from secrets.toml, and table rows from entries (10 per page, oldest to newest).
+3. **Screenshot pages** with header text (name, UPI, date, employer, contact method, time) and the full screenshot scaled to fit.
 
-| Change | Detail |
-|--------|--------|
-| Employer fields | Split into "Employer Name" and "Employer Address" |
-| Applied via Recruiter | Checkbox next to employer name |
-| United States | Checkbox next to address. Disables address field and submits "United States" |
-| Remote | Checkbox next to address. Sets `remote` boolean on entry |
-| How Contact Made | Defaults to "Online" (was "Select method...") |
-| T/F/E/O | Added "Online Application" / "O" option, defaults to it |
+All pages are concatenated into a single PDF using lopdf.
 
-### Date Filtering
+#### Architecture
 
-Filter controls above the entries table with From date, To date, and "To present" checkbox. Displays entry count and cumulative application time (sum of time_out minus time_in for all listed entries, shown as hours and minutes).
+| Component | Path | Description |
+|-----------|------|-------------|
+| `build_table_fields` | `rztamp/src/pdf.rs` | Accepts custom table row data and positions text using form_offsets.toml |
+| `generate_text_page` | `rztamp/src/pdf.rs` | Creates text-only PDF pages (cover page) |
+| `generate_image_page` | `rztamp/src/pdf.rs` | Creates PDF pages with scaled PNG images and header text |
+| `tanf-export` | `tools/src/export.rs` | CLI tool that reads a JSON manifest and produces the complete packet |
+| `Ztamp.PdfExport` | `ztamp/lib/ztamp/pdf_export.ex` | Elixir orchestration module that formats entries and calls the CLI |
+| LiveView handler | `job_search_live.ex` | `export_pdf` event triggers export of currently listed entries |
 
-### Entry Detail Modal
+#### Integration Test
 
-Each entry in the table has a "View" link that opens a modal dialog showing all entry fields in an editable form, a screenshot thumbnail (click to open full size in a new tab), and a delete button with confirmation.
-
-### Screenshot Serving
-
-Screenshots are served via `/screenshots/:filename` with path traversal protection. The controller validates that filenames contain no `..`, `/`, or `\` characters and end with `.png`.
-
-### Browser Landing Page
-
-When the browser starts, it navigates to `/browser-landing` which displays links to LinkedIn Jobs, Indeed, and Glassdoor.
-
-### Disabled Export PDF Button
-
-A disabled "Export PDF" button appears in the captured entries header area as a placeholder for future PDF packet export functionality.
-
-### README Documentation
-
-| File | Status |
-|------|--------|
-| `README.md` (top-level) | Created. Project description, component table, link to docs. |
-| `rztamp/README.md` | Created. Library purpose, prerequisites, build instructions, dependencies, modules. |
-| `ztamp/README.md` | Updated. Added Rust prerequisite, job search workflow description, screenshot route documentation. |
+A test with 2 entries produced a 4-page PDF (cover + 1 TANF form + 2 screenshots) at 228 KB.
 
 ---
 
 ## Manual Verification
 
-To verify the changes, please do the following.
-
 1. Start the server: `cd ztamp && mix phx.server`
 2. Navigate to `http://localhost:4000/job-search`
-3. Verify the form shows the new split employer fields with checkboxes.
-4. Verify "How Contact Made" defaults to "Online" and T/F/E/O defaults to "Online Application".
-5. Check the "United States" checkbox and verify the address field is disabled.
-6. Start the browser and verify it opens to the landing page with LinkedIn Jobs link.
-7. Click "View" on an existing entry and verify the modal shows the screenshot thumbnail and editable fields.
-8. Test editing and saving an entry from the modal.
-9. Test the date filter controls and verify the entry count and cumulative time update.
+3. Verify "How Contact Made" defaults to "Internet" in the form.
+4. Verify date filtering works (change From date, toggle "To present").
+5. Verify the Employer column in Captured Entries shows formatted employer info with recruiter and remote indicators.
+6. Click "Export PDF" and verify:
+   - A flash message reports the output file name.
+   - The PDF appears in `secret/` with the expected structure.
+   - Open the PDF and verify the cover page, TANF form pages, and screenshot pages.
 
 ---
 
 ## Questions for Human Review
 
-1. **Existing entry data.** The 23 existing entries have `employer_address` set to empty string and `applied_via_recruiter`/`remote` set to false. Some entries already have recruiter and remote information embedded in the employer name text from manual entry (e.g., "Unknown (applied via Howrecruit), New York, NY"). Should these be cleaned up via the edit modal, or would a batch update be preferred?
+1. **Cover page layout.** The cover page is plain text on a white background. Should it have any additional formatting, logos, or layout changes?
 
-2. **Export PDF.** The disabled "Export PDF" button is ready for the next prompt. Should the PDF export use the existing tanf-fill and tanf-concat tools, or is a different approach planned?
+2. **Form field values.** The `job_search_hours` field on the TANF form uses the value from `secrets.toml` (required hours). The `job_search_from` and `job_search_to` fields use dates from the oldest and newest entries in the export set. Are these correct, or should dates from a different source be used?
+
+3. **Screenshot page scaling.** Screenshots are scaled to fit within 15mm margins on each side with 42mm from the top for header text. If screenshots are very wide, they may appear small on the page. Should the scaling strategy be adjusted?
+
+4. **Export scope.** The export uses the currently filtered entries (respecting date filter settings). Should there be a separate date range selector for export, or is using the current filter correct?
 
 ---
 
@@ -102,14 +86,19 @@ To verify the changes, please do the following.
 cd ztamp && mix phx.server
 ```
 
-### Reset the Database
+### Build the Export Tool
 
 ```
-cd ztamp && mix ecto.reset
+cd tools && cargo build --release
 ```
 
-### Rollback the Migration
+### Run Export Manually
 
 ```
-cd ztamp && mix ecto.rollback
+tools/target/release/tanf-export \
+  --manifest /tmp/manifest.json \
+  --offsets assets/form/form_offsets.toml \
+  --secrets secret/secrets.toml \
+  --template assets/form/template.tiff \
+  --output secret/export.pdf
 ```

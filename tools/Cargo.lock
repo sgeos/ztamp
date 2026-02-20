@@ -1723,6 +1723,7 @@ dependencies = [
  "lopdf",
  "rztamp",
  "serde",
+ "serde_json",
  "toml",
 ]
 

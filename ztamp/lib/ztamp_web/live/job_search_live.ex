@@ -127,7 +127,9 @@ defmodule ZtampWeb.JobSearchLive do
 
   # -- Filter Events --
 
-  def handle_event("filter_entries", %{"from" => from_str, "to" => to_str}, socket) do
+  def handle_event("filter_entries", params, socket) do
+    from_str = Map.get(params, "from", "")
+    to_str = Map.get(params, "to", "")
     from_date = parse_date(from_str)
 
     to_date =
@@ -231,6 +233,27 @@ defmodule ZtampWeb.JobSearchLive do
      |> put_flash(:info, "Entry deleted.")}
   end
 
+  # -- Export Events --
+
+  def handle_event("export_pdf", _params, socket) do
+    entries = socket.assigns.entries
+
+    if entries == [] do
+      {:noreply, put_flash(socket, :error, "No entries to export.")}
+    else
+      case Ztamp.PdfExport.export(entries) do
+        {:ok, output_path} ->
+          filename = Path.basename(output_path)
+
+          {:noreply,
+           put_flash(socket, :info, "PDF exported to secret/#{filename}")}
+
+        {:error, reason} ->
+          {:noreply, put_flash(socket, :error, "PDF export failed: #{reason}")}
+      end
+    end
+  end
+
   # -- Private Helpers --
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
@@ -244,7 +267,7 @@ defmodule ZtampWeb.JobSearchLive do
       "date" => date,
       "time_in" => time_str,
       "time_out" => time_str,
-      "how_contact_made" => "Online",
+      "how_contact_made" => "Internet",
       "telephone_fax" => "O"
     }
   end
@@ -336,4 +359,26 @@ defmodule ZtampWeb.JobSearchLive do
   end
 
   defp parse_time_to_minutes(_), do: :error
+
+  @doc false
+  def format_employer(entry) do
+    name =
+      if entry.applied_via_recruiter do
+        "Unknown (applied via #{entry.employer_name})"
+      else
+        entry.employer_name
+      end
+
+    address =
+      if entry.remote do
+        "#{entry.employer_address} (remote)"
+      else
+        entry.employer_address
+      end
+
+    case address do
+      "" -> name
+      _ -> "#{name}, #{address}"
+    end
+  end
 end

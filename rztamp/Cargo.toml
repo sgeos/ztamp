@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-printpdf = { version = "0.9", features = ["tiff"] }
+printpdf = { version = "0.9", features = ["tiff", "png"] }
 image = { version = "0.25", default-features = false, features = ["tiff", "png"] }
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"

@@ -8,42 +8,42 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.4 UI Improvements and Schema Migration (V0.4-M1-P3)
+**Name**: V0.5 Bug Fixes and PDF Export (V0.5-M1-P4)
 **Status**: Complete
 **Started**: 2026-02-20
 
 ## Success Criteria
 
-- [x] V0.4 merged into main.
-- [x] Update database schema as requested.
 - [x] Update job search dashboard as requested.
-  - [x] Job search fields.
-  - [x] Captured entries.
-  - [x] Detailed entry modification dialog.
-- [x] Document installation and startup instructions in relevant READMEs.
+- [x] Fix date filtering.
+- [x] Update captured entry display.
+- [x] Implement Export to PDF functionality.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.4-M1-P3-T1 | Merge V0.4 into main | Complete | `feat/v04-screenshot-capture` fast-forwarded into `main`. New branch `feat/v05-ui-improvements` created. |
-| V0.4-M1-P3-T2 | Database migration | Complete | `employer_name_address` split into `employer_name` and `employer_address`. Added `applied_via_recruiter` and `remote` boolean columns. Existing 23 entries preserved. Reversible `down` function with formatting rules. |
-| V0.4-M1-P3-T3 | Screenshot controller | Complete | `ScreenshotController` serves PNGs from `secret/screenshots/` with path traversal protection. Route at `/screenshots/:filename`. |
-| V0.4-M1-P3-T4 | Landing page | Complete | `LandingController` serves browser landing page at `/browser-landing` with links to LinkedIn Jobs, Indeed, and Glassdoor. BrowserServer navigates to landing page on session start. |
-| V0.4-M1-P3-T5 | Modal component | Complete | `.modal` added to CoreComponents using daisyUI modal classes. Show/hide via `modal-open` class. Close button and backdrop click. |
-| V0.4-M1-P3-T6 | Form changes | Complete | Employer Name/Address split with "Applied via Recruiter", "United States", and "Remote" checkboxes. "How Contact Made" defaults to "Online". T/F/E/O selector with "Online Application" default. |
-| V0.4-M1-P3-T7 | Date filtering | Complete | From/To date inputs with "To present" checkbox. Entry count and cumulative time badges. |
-| V0.4-M1-P3-T8 | Entry detail modal | Complete | View/edit/delete modal with screenshot thumbnail. Click thumbnail opens full size in new tab. Edit form includes all fields. Delete with confirmation. |
-| V0.4-M1-P3-T9 | Disabled Export PDF button | Complete | Disabled "Export PDF" button in captured entries header area. Placeholder for future functionality. |
-| V0.4-M1-P3-T10 | README documentation | Complete | Created top-level `README.md` and `rztamp/README.md`. Updated `ztamp/README.md` with Rust prerequisite, workflow description, and screenshot route. |
+| V0.5-M1-P4-T1 | Fix "How Contact Made" default | Complete | Changed from "Online" to "Internet" in `default_attrs/0` and template select options. |
+| V0.5-M1-P4-T2 | Fix date filtering crash | Complete | Changed `handle_event("filter_entries", ...)` from pattern matching to `Map.get/3` to handle disabled inputs not submitting values. |
+| V0.5-M1-P4-T3 | Update employer display | Complete | Added `format_employer/1` function replicating migration down-function formatting. Template uses it for the Employer column. |
+| V0.5-M1-P4-T4 | Add PNG support to rztamp | Complete | Added "png" feature to printpdf dependency. |
+| V0.5-M1-P4-T5 | Add `build_table_fields` to rztamp | Complete | New function accepts custom table row data as `Vec<HashMap<String, String>>` and positions text using form_offsets.toml table config. |
+| V0.5-M1-P4-T6 | Add `generate_text_page` to rztamp | Complete | New function creates a text-only PDF page for the cover page. |
+| V0.5-M1-P4-T7 | Add `generate_image_page` to rztamp | Complete | New function creates a PDF page with a scaled PNG image and header text for screenshot pages. |
+| V0.5-M1-P4-T8 | Create `tanf-export` CLI | Complete | New binary reads JSON manifest, secrets, offsets, and template. Generates cover page, TANF form pages (10 entries each), screenshot pages (1 per entry), and merges all into a single PDF. Integration tested with 2 entries producing 4-page PDF. |
+| V0.5-M1-P4-T9 | Create `Ztamp.PdfExport` module | Complete | Elixir orchestration module that formats entries, writes JSON manifest, and calls tanf-export CLI. |
+| V0.5-M1-P4-T10 | Wire up Export PDF button | Complete | Button enabled when entries exist. Triggers `export_pdf` event. Flash message with output filename on success. |
 
 ## Notes
 
-- Existing 23 entries have `employer_name` populated from the old `employer_name_address` column. `employer_address` is empty string for these entries. `applied_via_recruiter` and `remote` default to false.
-- The edit modal includes "Internet" in the How Contact Made dropdown for backward compatibility with existing entries. New entries default to "Online".
-- Cumulative time is computed client-side from the `time_in` and `time_out` strings in `H:MM` format.
-- The "United States" checkbox disables the address field and injects "United States" at submission time.
-- The "Remote" checkbox sets the `remote` boolean field on the entry.
+- The export uses the currently listed entries (respecting date filters).
+- Entries are sorted oldest-to-newest for the export.
+- Cover page includes name, UPI, period, application count, recruiter count, and total time.
+- TANF form pages use CCW 90-degree rotation with the template.tiff background and black text.
+- The `job_search_hours` field on the form uses the value from secrets.toml (required hours).
+- The `job_search_from` and `job_search_to` fields on the form use dates from the oldest and newest entries.
+- Screenshot pages show header info (name, UPI, date, employer, contact, time) above the scaled screenshot.
+- The tanf-export binary must be built before use: `cd tools && cargo build --release`.
 
 ## History
 
@@ -64,3 +64,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-20 | V0.4-M1-P1: V0.3 merged to main. Screenshot capture workflow with Wallaby, LiveView, and PostgreSQL. |
 | 2026-02-20 | V0.4-M1-P2: ChromeDriver tested. Local time for form defaults. Submission time checkbox for time_out. README updated. |
 | 2026-02-20 | V0.4-M1-P3: V0.4 merged to main. Schema migration, form improvements, date filtering, entry modal, screenshot serving, browser landing page, README documentation. |
+| 2026-02-20 | V0.5-M1-P4: Bug fixes (default, filtering, display). PDF export with cover page, TANF forms, and screenshot pages. |

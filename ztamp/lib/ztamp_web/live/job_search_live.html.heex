@@ -91,7 +91,7 @@
         field={@form[:how_contact_made]}
         type="select"
         label="How Contact Made"
-        options={["Online", "In Person", "Phone", "Fax", "Email"]}
+        options={["Internet", "In Person", "Phone", "Fax", "Email"]}
         required
       />
       <.input
@@ -181,11 +181,11 @@
   <div>
     <div class="flex items-center justify-between mb-2">
       <h2 class="text-md font-semibold">Captured Entries</h2>
-      <.button disabled>Export PDF</.button>
+      <.button phx-click="export_pdf" disabled={@entries == []}>Export PDF</.button>
     </div>
     <.table :if={@entries != []} id="entries" rows={@entries}>
       <:col :let={entry} label="Date">{entry.date}</:col>
-      <:col :let={entry} label="Employer">{entry.employer_name}</:col>
+      <:col :let={entry} label="Employer">{ZtampWeb.JobSearchLive.format_employer(entry)}</:col>
       <:col :let={entry} label="Contact">{entry.how_contact_made}</:col>
       <:col :let={entry} label="T/F/E/O">{entry.telephone_fax}</:col>
       <:col :let={entry} label="Confirmation">{entry.internet_confirmation}</:col>

@@ -603,6 +603,184 @@ fn estimate_text_width(text: &str, font_size: f32) -> f32 {
     width_pt * 25.4 / 72.0
 }
 
+/// Build text fields for job search table rows from custom data.
+///
+/// Each row in `rows` maps column names to display values. Column names
+/// must match keys in `offsets.table.columns` (e.g., "date",
+/// "employer_name_address", "how_contact_made"). Rows are placed in
+/// order starting from the first table row. At most
+/// `offsets.table.row_count` rows are placed.
+pub fn build_table_fields(
+    offsets: &crate::offsets::FormOffsets,
+    rows: &[std::collections::HashMap<String, String>],
+    row_color_a: TextColor,
+    row_color_b: TextColor,
+) -> Vec<TextField> {
+    let mut text_fields = Vec::new();
+    let max_rows = offsets.table.row_count as usize;
+
+    let mut col_names: Vec<&String> = offsets.table.columns.keys().collect();
+    col_names.sort();
+
+    for (row_idx, row_data) in rows.iter().enumerate().take(max_rows) {
+        let y = offsets.table.first_row_y + (row_idx as f32) * offsets.table.row_height;
+        let color = if row_idx % 2 == 0 { row_color_a } else { row_color_b };
+
+        for col_name in &col_names {
+            if col_name.as_str() == "office_use_only" {
+                continue;
+            }
+
+            let col = &offsets.table.columns[col_name.as_str()];
+            let text = match row_data.get(col_name.as_str()) {
+                Some(v) if !v.is_empty() => v.clone(),
+                _ => continue,
+            };
+            let x_mm = align_in_width(col.x, col.width, &text, col.font_size, col.alignment);
+            text_fields.push(TextField {
+                text,
+                x_mm,
+                y_mm: y,
+                font_size: col.font_size,
+                color,
+            });
+        }
+    }
+
+    text_fields
+}
+
+/// Generate a simple text-only PDF page with no background image.
+///
+/// Creates a US Letter page with text fields positioned using
+/// form-space coordinates (millimeters from top-left).
+pub fn generate_text_page(
+    page_width_mm: f32,
+    page_height_mm: f32,
+    text_fields: &[TextField],
+) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let mut doc = PdfDocument::new("TANF Export Page");
+    let mut warnings: Vec<PdfWarnMsg> = Vec::new();
+    let mut ops: Vec<Op> = Vec::new();
+
+    let font_handle = PdfFontHandle::Builtin(BuiltinFont::Helvetica);
+
+    for field in text_fields {
+        let pdf_x = mm_to_pt(field.x_mm);
+        let pdf_y = mm_to_pt(page_height_mm - field.y_mm);
+
+        ops.push(Op::StartTextSection);
+        ops.push(Op::SetFillColor { col: field.color.to_pdf_color() });
+        ops.push(Op::SetFont { font: font_handle.clone(), size: Pt(field.font_size) });
+        ops.push(Op::SetTextCursor {
+            pos: Point {
+                x: Pt(pdf_x),
+                y: Pt(pdf_y),
+            },
+        });
+        ops.push(Op::ShowText {
+            items: vec![TextItem::Text(field.text.clone())],
+        });
+        ops.push(Op::EndTextSection);
+    }
+
+    let page = PdfPage::new(Mm(page_width_mm), Mm(page_height_mm), ops);
+    let pdf_bytes = doc.with_pages(vec![page]).save(&PdfSaveOptions::default(), &mut warnings);
+    Ok(pdf_bytes)
+}
+
+/// Generate a PDF page with a scaled image and header text.
+///
+/// The image is decoded from raw bytes (PNG or other supported format),
+/// scaled to fit within the specified area while preserving aspect ratio,
+/// and centered horizontally on the page. Text fields are overlaid on
+/// top of the image.
+///
+/// # Arguments
+///
+/// * `page_width_mm` - Page width in millimeters.
+/// * `page_height_mm` - Page height in millimeters.
+/// * `image_bytes` - Raw bytes of the image (PNG, TIFF, etc.).
+/// * `image_area_top_mm` - Distance from the top of the page to the
+///   top edge of the image area.
+/// * `image_area_max_width_mm` - Maximum width for the image.
+/// * `image_area_max_height_mm` - Maximum height for the image.
+/// * `text_fields` - Text items to overlay on the page.
+pub fn generate_image_page(
+    page_width_mm: f32,
+    page_height_mm: f32,
+    image_bytes: &[u8],
+    image_area_top_mm: f32,
+    image_area_max_width_mm: f32,
+    image_area_max_height_mm: f32,
+    text_fields: &[TextField],
+) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let mut doc = PdfDocument::new("TANF Screenshot Page");
+    let mut warnings: Vec<PdfWarnMsg> = Vec::new();
+
+    // Decode image to get dimensions and pixel data.
+    let raw_image = RawImage::decode_from_bytes(image_bytes, &mut warnings)
+        .map_err(|e| format!("Failed to decode image: {e}"))?;
+
+    let img_width_px = raw_image.width as f32;
+    let img_height_px = raw_image.height as f32;
+
+    let image_id = doc.add_image(&raw_image);
+
+    // Calculate DPI to fit within area while preserving aspect ratio.
+    // Use the larger DPI (more shrinking) to ensure the image fits.
+    let dpi_for_width = img_width_px / (image_area_max_width_mm / 25.4);
+    let dpi_for_height = img_height_px / (image_area_max_height_mm / 25.4);
+    let dpi = dpi_for_width.max(dpi_for_height);
+
+    // Calculate actual rendered size at this DPI.
+    let rendered_width_mm = img_width_px / dpi * 25.4;
+    let rendered_height_mm = img_height_px / dpi * 25.4;
+
+    // Center horizontally.
+    let x_offset_mm = (page_width_mm - rendered_width_mm) / 2.0;
+    // Position from top (PDF origin is bottom-left).
+    let y_offset_mm = page_height_mm - image_area_top_mm - rendered_height_mm;
+
+    let mut ops: Vec<Op> = Vec::new();
+
+    // Place image.
+    ops.push(Op::UseXobject {
+        id: image_id,
+        transform: XObjectTransform {
+            translate_x: Some(Pt(mm_to_pt(x_offset_mm))),
+            translate_y: Some(Pt(mm_to_pt(y_offset_mm))),
+            dpi: Some(dpi),
+            ..Default::default()
+        },
+    });
+
+    // Overlay text fields.
+    let font_handle = PdfFontHandle::Builtin(BuiltinFont::Helvetica);
+    for field in text_fields {
+        let pdf_x = mm_to_pt(field.x_mm);
+        let pdf_y = mm_to_pt(page_height_mm - field.y_mm);
+
+        ops.push(Op::StartTextSection);
+        ops.push(Op::SetFillColor { col: field.color.to_pdf_color() });
+        ops.push(Op::SetFont { font: font_handle.clone(), size: Pt(field.font_size) });
+        ops.push(Op::SetTextCursor {
+            pos: Point {
+                x: Pt(pdf_x),
+                y: Pt(pdf_y),
+            },
+        });
+        ops.push(Op::ShowText {
+            items: vec![TextItem::Text(field.text.clone())],
+        });
+        ops.push(Op::EndTextSection);
+    }
+
+    let page = PdfPage::new(Mm(page_width_mm), Mm(page_height_mm), ops);
+    let pdf_bytes = doc.with_pages(vec![page]).save(&PdfSaveOptions::default(), &mut warnings);
+    Ok(pdf_bytes)
+}
+
 /// Generate sample text for a table column and row number.
 fn sample_table_text(column: &str, row: u32) -> String {
     match column {
