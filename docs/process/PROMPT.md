@@ -12,29 +12,26 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 Answers to questions in the reverse prompt.
 
-1. Combined PDF is acceptable.
-2. Page order is acceptable.
-3. V0.3 is complete.
+1. I am pretty sure Chromedriver has been installed.
+2. Form time_in should autopopulate with the current local time.
+   time_out should have a checkmark that checked by default "use submisssion time."
+   - If checked, the field is greyed out and not selectable.
+   - If unchecked, a time can be entered manually.
+   - Either way, use local time.
+3. Screenshots need to be tested before V0.4 is complete.
 
 ## Objectives
 
-### Merge V0.3 Into Main
+### Test Chromedriver Installation and Screenshot Functionality.
 
-Merge V0.3 into main.
+Test Chromedriver installation and screenshot functionality.
 
-#### Start V0.4
+### Update ztamp README.md
 
-The V0.4 goal is some sort of workflow that allows Wallaby to perform screen captures.
-If it can attach to a running browser window, this is ideal.
-If not, it will need to launch a browser it can use to capture screenshots.
-There should be a page that allows me to fill out details for project application rows,
-along with a button to take a screenshot.
+Update ztamp `README.md` to note the following.
 
-When the button is pressed:
-
-- A screenshot is saved in a subdirectory in secrets.
-- A database entry including the form information and the screenshot
-  are stored in the database.
+- Chromedriver dependency.
+- `mix ecto.create` and `mix ecto.migrate` need to be run.
 
 ## Context
 
@@ -46,8 +43,9 @@ When the button is pressed:
 
 ## Success Criteria
 
-- V0.3 merged into main.
-- V0.4 functionality implemented as best as possible as long as there are no blockers.
+- Test Chromedriver installation and screenshot functionality.
+- Update ztamp `README.md`.
+- Comment on anything I need to do to manually verify.
 
 ## Notes
 

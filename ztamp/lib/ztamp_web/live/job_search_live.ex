@@ -23,6 +23,7 @@ defmodule ZtampWeb.JobSearchLive do
      socket
      |> assign(:entries, entries)
      |> assign(:browser_status, browser_status)
+     |> assign(:use_submission_time, true)
      |> assign_form(changeset)}
   end
 
@@ -61,7 +62,10 @@ defmodule ZtampWeb.JobSearchLive do
   def handle_event("take_screenshot", %{"entry" => entry_params}, socket) do
     case BrowserServer.take_screenshot() do
       {:ok, screenshot_path} ->
-        attrs = Map.put(entry_params, "screenshot_path", screenshot_path)
+        attrs =
+          entry_params
+          |> Map.put("screenshot_path", screenshot_path)
+          |> maybe_set_submission_time(socket.assigns.use_submission_time)
 
         case JobSearch.create_entry(attrs) do
           {:ok, _entry} ->
@@ -91,18 +95,37 @@ defmodule ZtampWeb.JobSearchLive do
     {:noreply, assign(socket, :browser_status, BrowserServer.status())}
   end
 
+  def handle_event("toggle_submission_time", _params, socket) do
+    {:noreply, assign(socket, :use_submission_time, !socket.assigns.use_submission_time)}
+  end
+
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset, as: :entry))
   end
 
   defp default_attrs do
-    now = DateTime.utc_now()
-    time_str = Calendar.strftime(now, "%H:%M")
+    {date, time_str} = local_date_and_time()
 
     %{
-      "date" => Date.to_iso8601(Date.utc_today()),
+      "date" => date,
       "time_in" => time_str,
       "time_out" => time_str
     }
+  end
+
+  defp maybe_set_submission_time(attrs, true) do
+    {_date, time_str} = local_date_and_time()
+    Map.put(attrs, "time_out", time_str)
+  end
+
+  defp maybe_set_submission_time(attrs, false), do: attrs
+
+  defp local_date_and_time do
+    {{year, month, day}, {hour, minute, _second}} = :calendar.local_time()
+
+    date = :io_lib.format("~4..0B-~2..0B-~2..0B", [year, month, day]) |> IO.iodata_to_binary()
+    time = :io_lib.format("~B:~2..0B", [hour, minute]) |> IO.iodata_to_binary()
+
+    {date, time}
   end
 end

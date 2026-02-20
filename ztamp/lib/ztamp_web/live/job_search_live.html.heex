@@ -66,7 +66,25 @@
         label="Internet Confirmation #"
       />
       <.input field={@form[:time_in]} type="text" label="Time In" placeholder="9:00" />
-      <.input field={@form[:time_out]} type="text" label="Time Out" placeholder="10:30" />
+      <div>
+        <.input
+          field={@form[:time_out]}
+          type="text"
+          label="Time Out"
+          placeholder="10:30"
+          disabled={@use_submission_time}
+        />
+        <label class="flex items-center gap-2 mt-1 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={@use_submission_time}
+            phx-click="toggle_submission_time"
+            value="true"
+            class="checkbox checkbox-sm"
+          />
+          <span class="text-sm">Use submission time</span>
+        </label>
+      </div>
     </div>
 
     <div class="flex gap-2 pt-4">
