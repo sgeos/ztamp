@@ -33,6 +33,7 @@ defmodule ZtampWeb.JobSearchLive do
      |> assign(:show_entry_modal, false)
      |> assign(:selected_entry, nil)
      |> assign(:edit_form, nil)
+     |> assign(:watermark, false)
      |> assign_form(changeset)}
   end
 
@@ -54,6 +55,7 @@ defmodule ZtampWeb.JobSearchLive do
         attrs =
           entry_params
           |> Map.put("screenshot_path", screenshot_path)
+          |> Map.put("internet_confirmation", "Yes")
           |> maybe_set_submission_time(socket.assigns.use_submission_time)
           |> maybe_set_united_states(socket.assigns.united_states)
           |> maybe_set_remote(socket.assigns.remote)
@@ -123,6 +125,10 @@ defmodule ZtampWeb.JobSearchLive do
 
   def handle_event("toggle_remote", _params, socket) do
     {:noreply, assign(socket, :remote, !socket.assigns.remote)}
+  end
+
+  def handle_event("toggle_watermark", _params, socket) do
+    {:noreply, assign(socket, :watermark, !socket.assigns.watermark)}
   end
 
   # -- Filter Events --
@@ -241,7 +247,7 @@ defmodule ZtampWeb.JobSearchLive do
     if entries == [] do
       {:noreply, put_flash(socket, :error, "No entries to export.")}
     else
-      case Ztamp.PdfExport.export(entries) do
+      case Ztamp.PdfExport.export(entries, watermark: socket.assigns.watermark) do
         {:ok, output_path} ->
           filename = Path.basename(output_path)
 

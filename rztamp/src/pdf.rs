@@ -309,35 +309,49 @@ pub fn generate_form_pdf(
 
     // Draw watermark on top of all other content.
     if let Some(wm) = watermark {
-        let center_x = mm_to_pt(page_width_mm / 2.0);
-        let center_y = mm_to_pt(page_height_mm / 2.0);
-        // Estimate text width to offset the starting position so
-        // the text is roughly centered on the page.
-        let text_width_pt = wm.text.len() as f32 * wm.font_size * 0.5;
-        let angle: f32 = 45.0;
-        let angle_rad = angle.to_radians();
-        let start_x = center_x - (text_width_pt / 2.0) * angle_rad.cos();
-        let start_y = center_y - (text_width_pt / 2.0) * angle_rad.sin();
-
-        ops.push(Op::StartTextSection);
-        ops.push(Op::SetFillColor { col: wm.color.to_pdf_color() });
-        ops.push(Op::SetFont { font: font_handle.clone(), size: Pt(wm.font_size) });
-        ops.push(Op::SetTextMatrix {
-            matrix: TextMatrix::TranslateRotate(
-                Pt(start_x),
-                Pt(start_y),
-                angle,
-            ),
-        });
-        ops.push(Op::ShowText {
-            items: vec![TextItem::Text(wm.text.clone())],
-        });
-        ops.push(Op::EndTextSection);
+        ops.extend(build_watermark_ops(wm, page_width_mm, page_height_mm, &font_handle));
     }
 
     let page = PdfPage::new(Mm(page_width_mm), Mm(page_height_mm), ops);
     let pdf_bytes = doc.with_pages(vec![page]).save(&PdfSaveOptions::default(), &mut warnings);
     Ok(pdf_bytes)
+}
+
+/// Build PDF operations for a diagonal watermark overlay.
+///
+/// Creates a large diagonal text element centered on the page.
+fn build_watermark_ops(
+    wm: &WatermarkConfig,
+    page_width_mm: f32,
+    page_height_mm: f32,
+    font: &PdfFontHandle,
+) -> Vec<Op> {
+    let center_x = mm_to_pt(page_width_mm / 2.0);
+    let center_y = mm_to_pt(page_height_mm / 2.0);
+    // Estimate text width to offset the starting position so
+    // the text is roughly centered on the page.
+    let text_width_pt = wm.text.len() as f32 * wm.font_size * 0.5;
+    let angle: f32 = 45.0;
+    let angle_rad = angle.to_radians();
+    let start_x = center_x - (text_width_pt / 2.0) * angle_rad.cos();
+    let start_y = center_y - (text_width_pt / 2.0) * angle_rad.sin();
+
+    vec![
+        Op::StartTextSection,
+        Op::SetFillColor { col: wm.color.to_pdf_color() },
+        Op::SetFont { font: font.clone(), size: Pt(wm.font_size) },
+        Op::SetTextMatrix {
+            matrix: TextMatrix::TranslateRotate(
+                Pt(start_x),
+                Pt(start_y),
+                angle,
+            ),
+        },
+        Op::ShowText {
+            items: vec![TextItem::Text(wm.text.clone())],
+        },
+        Op::EndTextSection,
+    ]
 }
 
 /// Build PDF operations for a form-space calibration grid.
@@ -654,10 +668,18 @@ pub fn build_table_fields(
 ///
 /// Creates a US Letter page with text fields positioned using
 /// form-space coordinates (millimeters from top-left).
+///
+/// # Arguments
+///
+/// * `page_width_mm` - Page width in millimeters.
+/// * `page_height_mm` - Page height in millimeters.
+/// * `text_fields` - Text items to overlay on the page.
+/// * `watermark` - Optional diagonal watermark text on top of all content.
 pub fn generate_text_page(
     page_width_mm: f32,
     page_height_mm: f32,
     text_fields: &[TextField],
+    watermark: Option<&WatermarkConfig>,
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut doc = PdfDocument::new("TANF Export Page");
     let mut warnings: Vec<PdfWarnMsg> = Vec::new();
@@ -684,6 +706,11 @@ pub fn generate_text_page(
         ops.push(Op::EndTextSection);
     }
 
+    // Draw watermark on top of all other content.
+    if let Some(wm) = watermark {
+        ops.extend(build_watermark_ops(wm, page_width_mm, page_height_mm, &font_handle));
+    }
+
     let page = PdfPage::new(Mm(page_width_mm), Mm(page_height_mm), ops);
     let pdf_bytes = doc.with_pages(vec![page]).save(&PdfSaveOptions::default(), &mut warnings);
     Ok(pdf_bytes)
@@ -706,6 +733,7 @@ pub fn generate_text_page(
 /// * `image_area_max_width_mm` - Maximum width for the image.
 /// * `image_area_max_height_mm` - Maximum height for the image.
 /// * `text_fields` - Text items to overlay on the page.
+/// * `watermark` - Optional diagonal watermark text on top of all content.
 pub fn generate_image_page(
     page_width_mm: f32,
     page_height_mm: f32,
@@ -714,6 +742,7 @@ pub fn generate_image_page(
     image_area_max_width_mm: f32,
     image_area_max_height_mm: f32,
     text_fields: &[TextField],
+    watermark: Option<&WatermarkConfig>,
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut doc = PdfDocument::new("TANF Screenshot Page");
     let mut warnings: Vec<PdfWarnMsg> = Vec::new();
@@ -774,6 +803,11 @@ pub fn generate_image_page(
             items: vec![TextItem::Text(field.text.clone())],
         });
         ops.push(Op::EndTextSection);
+    }
+
+    // Draw watermark on top of all other content.
+    if let Some(wm) = watermark {
+        ops.extend(build_watermark_ops(wm, page_width_mm, page_height_mm, &font_handle));
     }
 
     let page = PdfPage::new(Mm(page_width_mm), Mm(page_height_mm), ops);

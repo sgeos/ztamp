@@ -16,6 +16,7 @@ name = "tanf-export"
 path = "src/export.rs"
 
 [dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }
 lopdf = "0.39"
 rztamp = { path = "../rztamp" }
 serde = { version = "1", features = ["derive"] }

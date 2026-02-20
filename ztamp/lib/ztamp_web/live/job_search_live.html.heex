@@ -106,11 +106,6 @@
         ]}
       />
       <.input field={@form[:telephone_number]} type="tel" label="Phone/Fax Number" />
-      <.input
-        field={@form[:internet_confirmation]}
-        type="text"
-        label="Internet Confirmation #"
-      />
       <.input field={@form[:time_in]} type="text" label="Time In" placeholder="9:00" />
       <div>
         <.input
@@ -149,26 +144,26 @@
         <input type="date" name="from" value={@filter_from} class="input" />
       </div>
       <div>
-        <div>
-          <label class="label mb-1">To Date</label>
-          <input
-            type="date"
-            name="to"
-            value={@filter_to}
-            class="input"
-            disabled={@to_present}
-          />
+        <div class="flex items-center gap-2 mb-1">
+          <label class="label">To Date</label>
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={@to_present}
+              phx-click="toggle_to_present"
+              value="true"
+              class="checkbox checkbox-sm"
+            />
+            <span class="text-sm">Present</span>
+          </label>
         </div>
-        <label class="flex items-center gap-2 mt-1 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={@to_present}
-            phx-click="toggle_to_present"
-            value="true"
-            class="checkbox checkbox-sm"
-          />
-          <span class="text-sm">To present</span>
-        </label>
+        <input
+          type="date"
+          name="to"
+          value={@filter_to}
+          class="input"
+          disabled={@to_present}
+        />
       </div>
       <div class="flex gap-2">
         <div class="badge badge-neutral">{length(@entries)} entries</div>
@@ -181,16 +176,27 @@
   <div>
     <div class="flex items-center justify-between mb-2">
       <h2 class="text-md font-semibold">Captured Entries</h2>
-      <.button phx-click="export_pdf" disabled={@entries == []}>Export PDF</.button>
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={@watermark}
+            phx-click="toggle_watermark"
+            value="true"
+            class="checkbox checkbox-sm"
+          />
+          <span class="text-sm">Watermark</span>
+        </label>
+        <.button phx-click="export_pdf" disabled={@entries == []}>Export PDF</.button>
+      </div>
     </div>
     <.table :if={@entries != []} id="entries" rows={@entries}>
       <:col :let={entry} label="Date">{entry.date}</:col>
       <:col :let={entry} label="Employer">{ZtampWeb.JobSearchLive.format_employer(entry)}</:col>
       <:col :let={entry} label="Contact">{entry.how_contact_made}</:col>
       <:col :let={entry} label="T/F/E/O">{entry.telephone_fax}</:col>
-      <:col :let={entry} label="Confirmation">{entry.internet_confirmation}</:col>
-      <:col :let={entry} label="Screenshot">
-        <span :if={entry.screenshot_path} class="badge badge-success badge-sm">Captured</span>
+      <:col :let={entry} label="Internet">
+        <%= if entry.screenshot_path && entry.screenshot_path != "", do: "Yes", else: "No" %>
       </:col>
       <:action :let={entry}>
         <button phx-click="show_entry" phx-value-id={entry.id} class="link link-primary text-sm">
@@ -258,11 +264,6 @@
           prompt="Select..."
         />
         <.input field={@edit_form[:telephone_number]} type="tel" label="Phone/Fax Number" />
-        <.input
-          field={@edit_form[:internet_confirmation]}
-          type="text"
-          label="Internet Confirmation #"
-        />
         <.input field={@edit_form[:time_in]} type="text" label="Time In" />
         <.input field={@edit_form[:time_out]} type="text" label="Time Out" />
       </div>

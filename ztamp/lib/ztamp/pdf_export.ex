@@ -23,12 +23,14 @@ defmodule Ztamp.PdfExport do
   Entries should be sorted from oldest to newest. Returns
   `{:ok, output_path}` on success or `{:error, reason}` on failure.
   """
-  @spec export(list(Entry.t())) :: {:ok, String.t()} | {:error, String.t()}
-  def export(entries) when is_list(entries) do
+  @spec export(list(Entry.t()), keyword()) :: {:ok, String.t()} | {:error, String.t()}
+  def export(entries, opts \\ []) when is_list(entries) do
+    watermark = Keyword.get(opts, :watermark, false)
+
     with :ok <- validate_prerequisites(),
          {:ok, manifest_path} <- write_manifest(entries),
          output_path = generate_output_path(),
-         {:ok, _} <- run_export(manifest_path, output_path) do
+         {:ok, _} <- run_export(manifest_path, output_path, watermark) do
       File.rm(manifest_path)
       {:ok, output_path}
     end
@@ -63,10 +65,11 @@ defmodule Ztamp.PdfExport do
       total_time_display: compute_cumulative_time(sorted_entries),
       total_entries: length(sorted_entries),
       recruiter_count: Enum.count(sorted_entries, & &1.applied_via_recruiter),
+      export_date: format_date_for_form(Date.utc_today()),
       entries: Enum.map(sorted_entries, &entry_to_manifest/1)
     }
 
-    manifest_path = Path.join(System.tmp_dir!(), "tanf_export_#{System.unique_integer([:positive])}.json")
+    manifest_path = Path.join(@output_dir, "tanf_manifest_#{System.unique_integer([:positive])}.json")
 
     case File.write(manifest_path, Jason.encode!(manifest)) do
       :ok -> {:ok, manifest_path}
@@ -81,7 +84,7 @@ defmodule Ztamp.PdfExport do
       how_contact_made: entry.how_contact_made || "",
       telephone_fax: entry.telephone_fax || "",
       telephone_number: entry.telephone_number || "",
-      internet_confirmation: entry.internet_confirmation || "",
+      internet_confirmation: if(entry.screenshot_path && entry.screenshot_path != "", do: "Yes", else: "No"),
       time_in: entry.time_in || "",
       time_out: entry.time_out || "",
       screenshot_path: entry.screenshot_path || ""
@@ -179,7 +182,7 @@ defmodule Ztamp.PdfExport do
     Path.join(@output_dir, "tanf_export_#{timestamp}.pdf")
   end
 
-  defp run_export(manifest_path, output_path) do
+  defp run_export(manifest_path, output_path, watermark) do
     args = [
       "--manifest", manifest_path,
       "--offsets", @offsets_path,
@@ -187,6 +190,8 @@ defmodule Ztamp.PdfExport do
       "--template", @template_path,
       "--output", output_path
     ]
+
+    args = if watermark, do: args ++ ["--watermark"], else: args
 
     case System.cmd(@tools_bin, args, stderr_to_stdout: true) do
       {output, 0} ->

@@ -11,14 +11,16 @@
 
 use std::collections::{BTreeMap, HashMap};
 use std::fs;
+use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::process;
 
+use image::ImageFormat;
 use lopdf::{Document, Object, ObjectId};
 use serde::Deserialize;
 
 use rztamp::offsets;
-use rztamp::pdf::{self, Rotation, TextColor, TextField};
+use rztamp::pdf::{self, Rotation, TextColor, TextField, WatermarkConfig};
 
 // -- Manifest types (from Elixir JSON) --
 
@@ -31,6 +33,7 @@ struct Manifest {
     total_time_display: String,
     total_entries: u32,
     recruiter_count: u32,
+    export_date: String,
     entries: Vec<ManifestEntry>,
 }
 
@@ -41,6 +44,7 @@ struct ManifestEntry {
     how_contact_made: String,
     telephone_fax: String,
     telephone_number: String,
+    #[allow(dead_code)]
     internet_confirmation: String,
     time_in: String,
     time_out: String,
@@ -94,24 +98,18 @@ struct Args {
     secrets_path: PathBuf,
     template_path: PathBuf,
     output_path: PathBuf,
+    watermark: bool,
 }
 
 fn parse_args() -> Args {
     let args: Vec<String> = std::env::args().collect();
-
-    if args.len() < 11 {
-        eprintln!(
-            "Usage: tanf-export --manifest <path> --offsets <path> --secrets <path> \
-             --template <path> --output <path>"
-        );
-        process::exit(1);
-    }
 
     let mut manifest_path = None;
     let mut offsets_path = None;
     let mut secrets_path = None;
     let mut template_path = None;
     let mut output_path = None;
+    let mut watermark = false;
 
     let mut i = 1;
     while i < args.len() {
@@ -135,6 +133,9 @@ fn parse_args() -> Args {
             "--output" => {
                 i += 1;
                 output_path = Some(PathBuf::from(&args[i]));
+            }
+            "--watermark" => {
+                watermark = true;
             }
             other => {
                 eprintln!("Unknown argument: {other}");
@@ -163,6 +164,7 @@ fn parse_args() -> Args {
         secrets_path: secrets_path.unwrap(),
         template_path: template_path.unwrap(),
         output_path: output_path.unwrap(),
+        watermark,
     }
 }
 
@@ -286,6 +288,12 @@ fn build_form_header_values(
     map.insert("submission_deadline_date".to_string(), secrets.submission.deadline_date.clone());
     map.insert("submission_location".to_string(), secrets.submission.location.clone());
 
+    // Signatures: top and bottom of form, signed and dated with export date.
+    map.insert("participant_signature_top".to_string(), "SIGNATURE HERE".to_string());
+    map.insert("participant_signature_top_date".to_string(), manifest.export_date.clone());
+    map.insert("participant_signature_bottom".to_string(), "SIGNATURE HERE".to_string());
+    map.insert("participant_signature_bottom_date".to_string(), manifest.export_date.clone());
+
     map
 }
 
@@ -299,9 +307,9 @@ fn entry_to_table_row(entry: &ManifestEntry) -> HashMap<String, String> {
     if !entry.telephone_number.is_empty() {
         row.insert("telephone_number".to_string(), entry.telephone_number.clone());
     }
-    if !entry.internet_confirmation.is_empty() {
-        row.insert("internet_confirmation".to_string(), entry.internet_confirmation.clone());
-    }
+    // Internet confirmation is "Yes" if a screenshot is attached, "No" otherwise.
+    let confirmation = if entry.screenshot_path.is_empty() { "No" } else { "Yes" };
+    row.insert("internet_confirmation".to_string(), confirmation.to_string());
     row.insert("time_in".to_string(), entry.time_in.clone());
     row.insert("time_out".to_string(), entry.time_out.clone());
     row
@@ -451,6 +459,46 @@ fn merge_documents(documents: Vec<Document>) -> Result<Document, Box<dyn std::er
     Ok(merged)
 }
 
+// -- Image rotation --
+
+/// Rotate an image 90 degrees CCW if it is wider than it is tall (landscape).
+///
+/// Returns the rotated PNG bytes if rotation was applied, or the original
+/// bytes unchanged if the image is portrait or square.
+fn rotate_if_landscape(image_bytes: &[u8], entry_num: usize) -> Vec<u8> {
+    let img = match image::load_from_memory(image_bytes) {
+        Ok(img) => img,
+        Err(e) => {
+            eprintln!(
+                "Warning: could not decode screenshot {} for rotation check: {e}",
+                entry_num
+            );
+            return image_bytes.to_vec();
+        }
+    };
+
+    if img.width() > img.height() {
+        eprintln!(
+            "Rotating screenshot {} ({}x{}) 90 degrees CCW.",
+            entry_num,
+            img.width(),
+            img.height()
+        );
+        let rotated = img.rotate270();
+        let mut buf = Vec::new();
+        if let Err(e) = rotated.write_to(&mut Cursor::new(&mut buf), ImageFormat::Png) {
+            eprintln!(
+                "Warning: failed to re-encode rotated screenshot {}: {e}",
+                entry_num
+            );
+            return image_bytes.to_vec();
+        }
+        buf
+    } else {
+        image_bytes.to_vec()
+    }
+}
+
 // -- Main --
 
 fn load_secrets(path: &Path) -> Result<Secrets, Box<dyn std::error::Error>> {
@@ -507,12 +555,24 @@ fn main() {
     let page_h = form_offsets.meta.page_height_mm;
     let template_dpi = form_offsets.meta.template_dpi as f32;
 
+    // Build watermark config if requested.
+    let watermark_config = if args.watermark {
+        Some(WatermarkConfig {
+            text: "TEST SAMPLE".to_string(),
+            color: TextColor { r: 1.0, g: 0.5, b: 0.5 },
+            font_size: 72.0,
+        })
+    } else {
+        None
+    };
+    let watermark_ref = watermark_config.as_ref();
+
     let mut pdf_documents: Vec<Document> = Vec::new();
 
     // -- 1. Cover page --
     eprintln!("Generating cover page...");
     let cover_fields = build_cover_page(&secrets, &manifest);
-    let cover_bytes = pdf::generate_text_page(page_w, page_h, &cover_fields)
+    let cover_bytes = pdf::generate_text_page(page_w, page_h, &cover_fields, watermark_ref)
         .unwrap_or_else(|e| {
             eprintln!("Failed to generate cover page: {e}");
             process::exit(1);
@@ -572,7 +632,7 @@ fn main() {
             &circle_marks,
             Rotation::Ccw90,
             None, // no grid
-            None, // no watermark
+            watermark_ref,
         )
         .unwrap_or_else(|e| {
             eprintln!("Failed to generate form page {}: {e}", page_idx + 1);
@@ -612,6 +672,9 @@ fn main() {
                 process::exit(1);
             });
 
+        // Rotate landscape screenshots 90 degrees CCW.
+        let screenshot_bytes = rotate_if_landscape(&screenshot_bytes, entry_idx + 1);
+
         let header_fields = build_screenshot_header(&secrets, entry);
 
         let screenshot_page_bytes = pdf::generate_image_page(
@@ -622,6 +685,7 @@ fn main() {
             page_w - 30.0,       // 15mm margins each side
             page_h - 42.0 - 10.0, // remaining height minus bottom margin
             &header_fields,
+            watermark_ref,
         )
         .unwrap_or_else(|e| {
             eprintln!(
