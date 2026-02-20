@@ -5,7 +5,7 @@
 
 use printpdf::*;
 
-use crate::offsets::FormOffsets;
+use crate::offsets::{Alignment, FormOffsets};
 
 /// RGB color for text rendering.
 #[derive(Debug, Clone, Copy)]
@@ -442,8 +442,8 @@ pub fn build_calibration_fields(
             });
         }
 
-        // Center text within the field width when available.
-        let x_mm = center_in_width(offset.x, offset.width, &text, offset.font_size);
+        // Align text within the field width.
+        let x_mm = align_in_width(offset.x, offset.width, &text, offset.font_size, offset.alignment);
 
         text_fields.push(TextField {
             text,
@@ -470,7 +470,7 @@ pub fn build_calibration_fields(
 
             let col = &offsets.table.columns[col_name.as_str()];
             let text = sample_table_text(col_name, row + 1);
-            let x_mm = center_in_width(col.x, col.width, &text, col.font_size);
+            let x_mm = align_in_width(col.x, col.width, &text, col.font_size, col.alignment);
             text_fields.push(TextField {
                 text,
                 x_mm,
@@ -490,16 +490,27 @@ fn is_circle_option(name: &str) -> bool {
         || name.starts_with("employed_insurance_")
 }
 
-/// Compute a centered x position within a field width.
+/// Compute an aligned x position within a field width.
 ///
-/// If the field has a width and the text fits within it, returns
-/// an x offset that centers the text. Otherwise returns the original
-/// x position (left-aligned).
-fn center_in_width(x: f32, width: Option<f32>, text: &str, font_size: f32) -> f32 {
+/// For `Center`, offsets x by half the remaining space. For `Right`,
+/// offsets x by the full remaining space. For `Left`, returns x
+/// unchanged. Falls back to left-aligned when the text is wider than
+/// the field or when no width is specified.
+fn align_in_width(
+    x: f32,
+    width: Option<f32>,
+    text: &str,
+    font_size: f32,
+    alignment: Alignment,
+) -> f32 {
     if let Some(w) = width {
         let text_w = estimate_text_width(text, font_size);
         if text_w < w {
-            return x + (w - text_w) / 2.0;
+            return match alignment {
+                Alignment::Left => x,
+                Alignment::Center => x + (w - text_w) / 2.0,
+                Alignment::Right => x + w - text_w,
+            };
         }
     }
     x

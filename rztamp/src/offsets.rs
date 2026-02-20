@@ -25,6 +25,16 @@ pub struct Meta {
     pub template_dpi: u32,
 }
 
+/// Text alignment within a field's declared width.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Alignment {
+    #[default]
+    Left,
+    Center,
+    Right,
+}
+
 /// A single field's position on the form.
 #[derive(Debug, Deserialize)]
 pub struct FieldOffset {
@@ -34,6 +44,8 @@ pub struct FieldOffset {
     pub width: Option<f32>,
     #[serde(default = "default_font_size")]
     pub font_size: f32,
+    #[serde(default)]
+    pub alignment: Alignment,
 }
 
 /// Job search table configuration.
@@ -53,6 +65,8 @@ pub struct ColumnOffset {
     pub width: Option<f32>,
     #[serde(default = "default_font_size")]
     pub font_size: f32,
+    #[serde(default)]
+    pub alignment: Alignment,
 }
 
 fn default_font_size() -> f32 {

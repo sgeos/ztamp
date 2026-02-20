@@ -12,30 +12,22 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 Answers to questions in the reverse prompt.
 
-1. Positions manually updated.
-2. Positions manually updated.
-
-Everything is roughly in the right place, however a few adjustments are needed.
-
-- Years should be four digits. 2026, not 26.
-- The following ellipses should be larger.
-  - Employer Paid
-  - Employee Paid
-  - Both Paid
-- Ellipse labels like "Weekly" are not needed in production, but they are helpful for debugging.
-
-Is it possible to center text in fields?
-If so, I would like to center text.
+1. Centering is largely acceptable, but the positions need to be readjusted in some cases.
+2. Ellipse size is acceptable.
 
 ## Objectives
 
-### Revise Debug Printing Data
+### Revise Export Tool and Offsets File
 
-Revise debug printing data for PDF calibration as specified.
+Add an alignement field to all textfields in the offsets file.
 
-### Centered Textfields
+- Left
+- Center
+- Right
 
-Center text in fields if possible.
+Support this in the export tool.
+Set all fields in the offsets file to "Center".
+I will manually adjust.
 
 ### Repeat Calibaration Test
 
@@ -52,7 +44,7 @@ It is OK to use the same filename.
 
 ## Success Criteria
 
-- Debug printing data revised as specified.
+- Offsets file revised as specified.
 - PDF export tool revised as specified.
 - Latest calibration test exported.
 
