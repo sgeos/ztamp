@@ -6,7 +6,7 @@
 //! Usage:
 //!     tanf-fill --offsets <path> --secrets <path> --template <path> --output <path>
 //!              [--rotation <mode>] [--grid <interval_mm>] [--grid-color <color>]
-//!              [--text-color <color>]
+//!              [--text-color <color>] [--labels]
 //!
 //! Rotation modes: rightside-up (default), counter-clockwise, clockwise, upside-down
 //! Grid/text colors: green, gray, red, blue, black (default for text), magenta, cyan
@@ -17,6 +17,9 @@
 //! - Circles drawn around all circle-one options
 //!
 //! With --text-color, all text and circles use the specified color.
+//!
+//! --labels: Show text labels inside circle-one option ellipses. Without this
+//! flag, only the ellipses are drawn (no label text).
 
 use std::collections::HashMap;
 use std::fs;
@@ -73,6 +76,7 @@ struct Args {
     grid_interval: Option<f32>,
     grid_color: TextColor,
     text_color: Option<TextColor>,
+    show_labels: bool,
 }
 
 fn parse_args() -> Args {
@@ -98,6 +102,7 @@ fn parse_args() -> Args {
     let mut grid_interval: Option<f32> = None;
     let mut grid_color = TextColor { r: 0.0, g: 0.6, b: 0.0 }; // default green
     let mut text_color: Option<TextColor> = None;
+    let mut show_labels = false;
 
     let mut i = 1;
     while i < args.len() {
@@ -155,6 +160,9 @@ fn parse_args() -> Args {
                     process::exit(1);
                 }));
             }
+            "--labels" => {
+                show_labels = true;
+            }
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
@@ -185,6 +193,7 @@ fn parse_args() -> Args {
         grid_interval,
         grid_color,
         text_color,
+        show_labels,
     }
 }
 
@@ -251,6 +260,7 @@ fn main() {
         header_color,
         row_color_a,
         row_color_b,
+        args.show_labels,
     );
 
     let rotation_label = match args.rotation {
@@ -327,9 +337,9 @@ fn build_value_map(secrets: &Secrets) -> HashMap<String, String> {
 
     // Signature placeholders.
     map.insert("participant_signature_top".to_string(), "SIGNATURE".to_string());
-    map.insert("participant_signature_top_date".to_string(), "DATE".to_string());
+    map.insert("participant_signature_top_date".to_string(), "01/01/2001".to_string());
     map.insert("participant_signature_bottom".to_string(), "SIGNATURE".to_string());
-    map.insert("participant_signature_bottom_date".to_string(), "DATE".to_string());
+    map.insert("participant_signature_bottom_date".to_string(), "01/01/2001".to_string());
 
     // "Should you become employed" placeholders.
     map.insert("employed_name_address_line1".to_string(), "Acme Corp".to_string());

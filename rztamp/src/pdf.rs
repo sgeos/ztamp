@@ -408,12 +408,16 @@ fn mm_to_pt(mm: f32) -> f32 {
 ///
 /// Non-job-search fields use `header_color`. Job search table rows alternate
 /// between `row_color_a` and `row_color_b`. All circle-one options are circled.
+///
+/// When `show_circle_labels` is false, text labels for circle-one options
+/// are omitted. The ellipses are still drawn.
 pub fn build_calibration_fields(
     offsets: &FormOffsets,
     values: &std::collections::HashMap<String, String>,
     header_color: TextColor,
     row_color_a: TextColor,
     row_color_b: TextColor,
+    show_circle_labels: bool,
 ) -> (Vec<TextField>, Vec<CircleMark>) {
     let mut text_fields = Vec::new();
     let mut circle_marks = Vec::new();
@@ -430,7 +434,7 @@ pub fn build_calibration_fields(
             .unwrap_or_else(|| name.to_uppercase());
 
         if is_circle_option(name) {
-            // Circle options: place text and draw circle around it.
+            // Circle options: draw ellipse around the option text.
             let rx = estimate_text_width(&text, offset.font_size) / 2.0 + 1.5;
             let ry = offset.font_size * 0.0353 * 10.0 / 2.0 + 0.5;
             circle_marks.push(CircleMark {
@@ -440,6 +444,11 @@ pub fn build_calibration_fields(
                 radius_y_mm: ry,
                 color: header_color,
             });
+
+            // Skip label text when labels are disabled.
+            if !show_circle_labels {
+                continue;
+            }
         }
 
         // Align text within the field width.
