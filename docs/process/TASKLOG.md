@@ -8,31 +8,31 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.2 Four PoC Variants (V0.2-M1-P15)
+**Name**: V0.3 PDF Concatenation Tool (V0.3-M1-P1)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
-- [x] Debug fill flag added to export tool.
-- [x] Four PoCs generated.
+- [x] V0.2 merged into main.
+- [x] Concatenation tool generated.
+- [x] Four PoCs concatenated.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.2-M1-P15-T1 | Fix build_calibration_fields to skip missing values | Complete | Named fields with no matching value in the map are now skipped entirely (previously rendered as uppercase field name). |
-| V0.2-M1-P15-T2 | Gate table generation behind fill_table parameter | Complete | `fill_table: bool` parameter added to `build_calibration_fields`. When false, job search table rows are not generated. Caller passes `args.debug_fill`. |
-| V0.2-M1-P15-T3 | Generate Production PoC | Complete | `secret/poc_production.pdf` (77,578 bytes). 8 text fields (secrets only), 0 circle marks, black text, no grid, no labels, no watermark, no debug fill. |
-| V0.2-M1-P15-T4 | Generate Almost Production PoC | Complete | `secret/poc_almost_production.pdf` (87,965 bytes). 104 text fields, 2 circle marks, black text, no grid, no labels, red watermark, debug fill. |
-| V0.2-M1-P15-T5 | Generate Black Text Testing PoC | Complete | `secret/poc_testing.pdf` (89,632 bytes). 104 text fields, 8 circle marks, black text, no grid, no labels, red watermark, debug fill. |
-| V0.2-M1-P15-T6 | Generate Debug PoC | Complete | `secret/poc_debug.pdf` (100,544 bytes). 112 text fields, 8 circle marks, calibration colors, 5mm green grid, labels, red watermark, debug fill. |
+| V0.3-M1-P1-T1 | Merge V0.2 into main | Complete | `feat/v02-pdf-write-poc` fast-forwarded into `main`. All V0.2 commits now on main. |
+| V0.3-M1-P1-T2 | Create feat/v03-pdf-concatenation branch | Complete | Branch created from main at commit 6e91a09. |
+| V0.3-M1-P1-T3 | Create tanf-concat tool | Complete | New binary `tanf-concat` added to tools/. Uses `lopdf` 0.39 for PDF merging. CLI: `tanf-concat --output <path> <input1.pdf> <input2.pdf> ...`. Refuses to overwrite existing output. Requires at least two input files. |
+| V0.3-M1-P1-T4 | Concatenate four PoCs | Complete | `secret/poc_combined.pdf` (354,455 bytes). Contains all four PoC pages in order: production, almost production, testing, debug. |
 
 ## Notes
 
-- The `build_calibration_fields` function now skips named fields with no value in the map instead of falling back to the uppercase field name. This means the `--debug-fill` flag has a meaningful effect: without it, only secrets-sourced fields appear.
-- The `fill_table` parameter gates hardcoded sample table data. Without `--debug-fill`, the table is empty.
-- Previous notes on printpdf API, form dimensions, coordinate system, alignment, labels flag, watermark, circle-all, and text width estimation remain valid.
+- The `lopdf` crate (0.39) is used for PDF merging. The merge follows the canonical lopdf pattern: renumber object IDs, collect pages and objects, stitch together the Catalog and Pages tree.
+- Bookmark/outline objects from source documents are discarded during merge (standard lopdf behavior).
+- The `rayon` feature is enabled by default in lopdf for parallelized PDF parsing.
+- Previous notes on printpdf API, form dimensions, coordinate system, alignment, labels flag, watermark, circle-all, debug-fill, and text width estimation remain valid.
 
 ## History
 
@@ -48,4 +48,5 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.2-M1-P12: Employment date fix. Start date and first check year changed to 2001. |
 | 2026-02-19 | V0.2-M1-P13: Watermark and three PoCs. --watermark and --circle-all flags. Three PoC variants generated. |
 | 2026-02-19 | V0.2-M1-P14: Debug fill flag. --debug-fill gates hardcoded test data. Three PoCs regenerated. |
-| 2026-02-19 | V0.2-M1-P15: Four PoC variants. Fixed missing-value handling (skip instead of uppercase fallback). Gated table behind fill_table. Production PoC with secrets-only data. |
+| 2026-02-19 | V0.2-M1-P15: Four PoC variants. Fixed missing-value handling. Gated table behind fill_table. Production PoC with secrets-only data. |
+| 2026-02-19 | V0.3-M1-P1: V0.2 merged to main. PDF concatenation tool created. Four PoCs concatenated. |

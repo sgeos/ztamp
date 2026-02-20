@@ -12,50 +12,23 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 Answers to questions in the reverse prompt.
 
-1. PoC largely good. Need some minor adjustments.
+1. PoC is fine.
+2. Time to move onto concatenation.
 
 ## Objectives
 
-### Generate Four PoC Files In Preparation for Concatenation
+### Merge V0.2 Into Main
 
-Reexport each PoC file with the new flag.
-Each file should have a different name.
+Merge V0.2 into main.
 
-#### Production PoC
+#### Create PDF Concatenation Tool
 
-- No grid.
-- All text is black.
-- No ellipse labels.
-- Only one ellipse in each series is circled.
-- No debug test data.
-- No watermark.
+Create a PDF concatenation in the V0.3 branch.
+This should be a new tool.
 
-#### Almost Production PoC
+#### Concatenate Four Existing PoCs
 
-- No grid.
-- All text is black.
-- No ellipse labels.
-- Only one ellipse in each series is circled.
-- Fill with debug test data.
-- Red watermark.
-
-#### Black Text Testing PoC
-
-- No grid.
-- All text is black.
-- No ellipse labels.
-- All ellipses in each series circled.
-- Fill with debug test data.
-- Red watermark.
-
-#### Debug PoC
-
-- Green grid.
-- Debug colors for text.
-- Ellipse labels.
-- All ellipses in each series circled.
-- Fill with debug test data.
-- Red watermark.
+Concatenate the four existing PoCs into a new document with a new name.
 
 ## Context
 
@@ -67,8 +40,9 @@ Each file should have a different name.
 
 ## Success Criteria
 
-- Debug fill flag added to export tool.
-- Four PoCs generated.
+- V0.2 merged into main.
+- Concatenation tool generated.
+- Four PoCs concatenated.
 
 ## Notes
 

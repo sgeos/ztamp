@@ -7,7 +7,12 @@ edition = "2024"
 name = "tanf-fill"
 path = "src/fill.rs"
 
+[[bin]]
+name = "tanf-concat"
+path = "src/concat.rs"
+
 [dependencies]
+lopdf = "0.39"
 rztamp = { path = "../rztamp" }
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"
