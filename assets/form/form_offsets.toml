@@ -22,16 +22,16 @@ template_dpi = 200
 # --- Header Fields (secret values from secrets.toml) ---
 
 [fields.case_name]
-x = 30.0
-y = 33.5
-width = 60.0
+x = 28.0
+y = 34.5
+width = 55.0
 font_size = 10
 alignment = "center"
 
 [fields.upi_number]
-x = 120.0
-y = 33.5
-width = 35.0
+x = 118.0
+y = 34.5
+width = 37.0
 font_size = 10
 alignment = "center"
 
@@ -40,42 +40,42 @@ x = 94.0
 y = 53.0
 width = 20.0
 font_size = 10
-alignment = "center"
+alignment = "left"
 
 [fields.job_search_to]
 x = 116.5
 y = 53.0
 width = 20.0
 font_size = 10
-alignment = "center"
+alignment = "left"
 
 [fields.job_search_hours]
 x = 141.0
 y = 53.0
 width = 15.0
 font_size = 10
-alignment = "center"
+alignment = "left"
 
 [fields.submission_deadline_time]
 x = 71.0
 y = 57.5
 width = 20.0
 font_size = 10
-alignment = "center"
+alignment = "left"
 
 [fields.submission_deadline_date]
 x = 93.0
 y = 57.5
 width = 25.0
 font_size = 10
-alignment = "center"
+alignment = "left"
 
 [fields.submission_location]
 x = 115.0
 y = 57.5
 width = 30.0
 font_size = 10
-alignment = "center"
+alignment = "left"
 
 # --- Participant's Signature (Above Job Search Table) ---
 
@@ -84,10 +84,10 @@ x = 5.0
 y = 75.0
 width = 80.0
 font_size = 10
-alignment = "center"
+alignment = "left"
 
 [fields.participant_signature_top_date]
-x = 90.0
+x = 85.0
 y = 75.0
 width = 35.0
 font_size = 10
@@ -109,7 +109,7 @@ row_count = 10
 x = 5.5
 width = 20.0
 font_size = 9
-alignment = "center"
+alignment = "left"
 
 [table.columns.employer_name_address]
 x = 36.5
@@ -119,25 +119,25 @@ alignment = "center"
 
 [table.columns.how_contact_made]
 x = 115.0
-width = 18.0
+width = 25.0
 font_size = 9
 alignment = "center"
 
 [table.columns.telephone_fax]
-x = 145.0
-width = 16.0
+x = 144.0
+width = 15.0
 font_size = 9
 alignment = "center"
 
 [table.columns.telephone_number]
 x = 165.0
-width = 28.0
+width = 37.0
 font_size = 8
 alignment = "center"
 
 [table.columns.internet_confirmation]
 x = 205.0
-width = 14.0
+width = 20.0
 font_size = 9
 alignment = "center"
 
@@ -167,47 +167,47 @@ x = 5.0
 y = 152.5
 width = 80.0
 font_size = 9
-alignment = "center"
+alignment = "left"
 
 [fields.employed_name_address_line2]
 x = 5.0
 y = 157.0
 width = 80.0
 font_size = 9
-alignment = "center"
+alignment = "left"
 
 [fields.employed_name_address_line3]
 x = 5.0
 y = 162.0
 width = 80.0
 font_size = 9
-alignment = "center"
+alignment = "left"
 
 [fields.employed_telephone]
-x = 55.0
+x = 5.0
 y = 162.0
-width = 80.0
+width = 79.0
 font_size = 9
-alignment = "center"
+alignment = "right"
 
 [fields.employed_start_date]
 x = 107.0
 y = 147.5
-width = 25.0
+width = 20.0
 font_size = 9
 alignment = "center"
 
 [fields.employed_hours_per_week]
 x = 180.0
 y = 147.5
-width = 20.0
+width = 12.0
 font_size = 9
 alignment = "center"
 
 [fields.employed_hourly_rate]
 x = 224.0
 y = 147.5
-width = 20.0
+width = 12.0
 font_size = 9
 alignment = "center"
 
@@ -243,33 +243,33 @@ x = 116.0
 y = 156.5
 width = 10.0
 font_size = 9
-alignment = "center"
+alignment = "left"
 
 [fields.employed_first_check_day]
 x = 122.0
 y = 156.5
 width = 10.0
 font_size = 9
-alignment = "center"
+alignment = "left"
 
 [fields.employed_first_check_year]
-x = 128.0
+x = 127.0
 y = 156.5
 width = 10.0
 font_size = 9
-alignment = "center"
+alignment = "left"
 
 [fields.employed_tips]
 x = 151.0
 y = 156.5
-width = 15.0
+width = 12.0
 font_size = 9
 alignment = "center"
 
 [fields.employed_job_title]
 x = 209.0
 y = 156.5
-width = 30.0
+width = 45.0
 font_size = 9
 alignment = "center"
 
@@ -306,11 +306,11 @@ x = 5.0
 y = 174.0
 width = 80.0
 font_size = 10
-alignment = "center"
+alignment = "left"
 
 [fields.participant_signature_bottom_date]
-x = 130.0
+x = 124.0
 y = 174.0
-width = 30.0
+width = 35.0
 font_size = 10
 alignment = "center"

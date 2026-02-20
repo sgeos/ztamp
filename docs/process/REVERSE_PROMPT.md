@@ -9,41 +9,45 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.2-M1-P8 Alignment Field
+**Task**: V0.2-M1-P9 Black Text PoC
 
 ---
 
 ## Verification
 
-### Alignment Enum (rztamp/src/offsets.rs)
+### --text-color Flag (tools/src/fill.rs)
 
-An `Alignment` enum was added with three variants: `Left`, `Center`, `Right`. It derives `Default` (defaulting to `Left`) and uses `#[serde(rename_all = "lowercase")]` for TOML deserialization. The `alignment` field was added to both `FieldOffset` and `ColumnOffset` structs with `#[serde(default)]`.
+A `--text-color <color>` flag was added to the tanf-fill CLI tool. When specified, all text fields and circle marks use the given color instead of the default calibration colors (red for headers, blue/magenta alternating for table rows).
 
-### PDF Rendering (rztamp/src/pdf.rs)
+| Flag | Behavior |
+|------|----------|
+| Omitted | Calibration colors: red headers, blue/magenta table rows |
+| `--text-color black` | All text and circles in black |
+| `--text-color <any>` | All text and circles in the specified color |
 
-The previous `center_in_width()` function was replaced by `align_in_width()` which accepts an `Alignment` parameter.
-
-| Alignment | Behavior |
-|-----------|----------|
-| Left | Text starts at field x position (no offset) |
-| Center | Text offset by (width - text_width) / 2 |
-| Right | Text offset by (width - text_width) |
-
-When text exceeds the field width or no width is specified, all alignments fall back to left-aligned positioning from the x coordinate.
-
-### form_offsets.toml
-
-All 28 named field entries and all 9 table column entries now include `alignment = "center"`. No coordinate values were changed. The human pilot can manually change individual fields to `"left"` or `"right"` as needed.
+The flag accepts the same named colors as `--grid-color`: green, gray, red, blue, black, magenta, cyan.
 
 ### Sample Output
 
-Generated at `secret/calibration_sample.pdf` (100,661 bytes, 112 text fields, 8 circle marks, 5mm green grid, counter-clockwise rotation).
+Generated at `secret/calibration_sample.pdf` (90,565 bytes, 112 text fields, 8 circle marks, no grid, black text, counter-clockwise rotation).
 
 ---
 
-## Manual Calibration Command
+## Commands
 
-To regenerate the calibration PDF after editing `form_offsets.toml`, run the following from the repository root.
+### Black Text PoC (no grid, black text)
+
+```
+rm -f secret/calibration_sample.pdf && tools/target/debug/tanf-fill \
+  --offsets assets/form/form_offsets.toml \
+  --secrets secret/secrets.toml \
+  --template assets/form/template.tiff \
+  --output secret/calibration_sample.pdf \
+  --rotation counter-clockwise \
+  --text-color black
+```
+
+### Calibration Mode (grid, colored text)
 
 ```
 rm -f secret/calibration_sample.pdf && tools/target/debug/tanf-fill \
@@ -61,13 +65,11 @@ To rebuild after code changes, first run `cargo build --manifest-path tools/Carg
 
 ## Questions for Human Review
 
-1. **Alignment defaults.** All fields are currently set to "center". After inspecting the calibration sample, which fields should be changed to "left" or "right" alignment?
+1. **Black text PoC.** Please inspect `secret/calibration_sample.pdf`. Does the black text on the form template look acceptable for production use? Are any position or alignment adjustments needed?
 
 ---
 
 ## Notes
 
-- The `Alignment` enum is `pub` and available to downstream code via `rztamp::offsets::Alignment`.
-- Circle-one options have `alignment = "center"` but no `width`, so alignment has no effect on them. Their text and ellipse positioning is unchanged.
-- The text width estimation remains approximate (Helvetica average character width at 0.5em). Alignment accuracy depends on this estimate.
+- The `--text-color` and `--grid` flags are independent. They can be combined (for example, black text with a grid overlay) or used separately.
 - The pre-existing dead code warning for the `form` field in the `Secrets` struct persists (from V0.2-M1-P1).

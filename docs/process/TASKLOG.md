@@ -8,31 +8,29 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.2 Alignment Field (V0.2-M1-P8)
+**Name**: V0.2 Black Text PoC (V0.2-M1-P9)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
-- [x] Offsets file revised as specified.
-- [x] PDF export tool revised as specified.
+- [x] Black text and no grid for PoC.
 - [x] Latest calibration test exported.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.2-M1-P8-T1 | Add Alignment enum to offsets module | Complete | `Alignment` enum (Left, Center, Right) added to `rztamp/src/offsets.rs`. Added `alignment` field to both `FieldOffset` and `ColumnOffset` structs with `#[serde(default)]` (defaults to Left). Uses `#[serde(rename_all = "lowercase")]` for TOML values. |
-| V0.2-M1-P8-T2 | Support alignment in PDF rendering | Complete | `center_in_width()` replaced by `align_in_width()` in `rztamp/src/pdf.rs`. Handles Left (no offset), Center (half remaining space), Right (full remaining space). Falls back to left-aligned when text exceeds width or no width is specified. |
-| V0.2-M1-P8-T3 | Add alignment to form_offsets.toml | Complete | `alignment = "center"` added to all 28 field entries and all 9 table column entries. Human will manually adjust individual fields as needed. |
-| V0.2-M1-P8-T4 | Generate calibration sample | Complete | `secret/calibration_sample.pdf` (100,661 bytes). 5mm grid, green, CCW rotation. 112 text fields, 8 circle marks. |
+| V0.2-M1-P9-T1 | Add --text-color flag to CLI | Complete | `--text-color <color>` flag added to tanf-fill. When specified, all text and circle marks use the given color instead of calibration colors (red/blue/magenta). Accepts same named colors as --grid-color. |
+| V0.2-M1-P9-T2 | Generate black text PoC | Complete | `secret/calibration_sample.pdf` (90,565 bytes). No grid, black text, CCW rotation. 112 text fields, 8 circle marks. |
+| V0.2-M1-P9-T3 | Update documentation and commit | Complete | TASKLOG, REVERSE_PROMPT updated. |
 
 ## Notes
 
-- The `Alignment` enum defaults to `Left` when not specified in the TOML. All current entries are explicitly set to "center".
-- Circle-one options have alignment = "center" in the TOML but no width, so alignment has no effect on them. The ellipse and text positioning for circle-one options is unchanged.
-- The human pilot's manually adjusted coordinate values from P7 are preserved. Only the alignment field was added.
-- Previous notes on printpdf API, form dimensions, coordinate system, and text width estimation remain valid.
+- The --text-color flag is optional. Without it, calibration colors (red headers, blue/magenta alternating table rows) are used as before.
+- The smaller PDF size (90,565 vs 100,661 bytes) is due to the absence of grid lines.
+- The human pilot's manually adjusted alignment and position values in form_offsets.toml are preserved.
+- Previous notes on printpdf API, form dimensions, coordinate system, alignment, and text width estimation remain valid.
 
 ## History
 
@@ -50,3 +48,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.2-M1-P6: Offset rescaling. All X/Y values in form_offsets.toml rescaled from portrait to landscape coordinate system. X stretched by 1.2941, Y squashed by 0.7727. |
 | 2026-02-19 | V0.2-M1-P7: Debug data fixes and text centering. Four-digit years, larger insurance ellipses, text centered within field widths. |
 | 2026-02-19 | V0.2-M1-P8: Alignment field. Alignment enum (Left, Center, Right) added to offsets and PDF rendering. All fields set to "center". |
+| 2026-02-19 | V0.2-M1-P9: Black text PoC. --text-color flag added to tanf-fill. Black text, no grid output generated. |

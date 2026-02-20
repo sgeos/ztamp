@@ -6,14 +6,17 @@
 //! Usage:
 //!     tanf-fill --offsets <path> --secrets <path> --template <path> --output <path>
 //!              [--rotation <mode>] [--grid <interval_mm>] [--grid-color <color>]
+//!              [--text-color <color>]
 //!
 //! Rotation modes: rightside-up (default), counter-clockwise, clockwise, upside-down
-//! Grid colors: green (default), gray, red, blue, black, magenta, cyan
+//! Grid/text colors: green, gray, red, blue, black (default for text), magenta, cyan
 //!
-//! For calibration mode, uses colored text:
+//! Without --text-color, uses calibration colors:
 //! - Red for non-job-search fields
 //! - Alternating blue and magenta for job search table rows
 //! - Circles drawn around all circle-one options
+//!
+//! With --text-color, all text and circles use the specified color.
 
 use std::collections::HashMap;
 use std::fs;
@@ -69,6 +72,7 @@ struct Args {
     rotation: Rotation,
     grid_interval: Option<f32>,
     grid_color: TextColor,
+    text_color: Option<TextColor>,
 }
 
 fn parse_args() -> Args {
@@ -78,10 +82,11 @@ fn parse_args() -> Args {
         eprintln!(
             "Usage: tanf-fill --offsets <path> --secrets <path> \
              --template <path> --output <path> [--rotation <mode>] \
-             [--grid <interval_mm>] [--grid-color <color>]"
+             [--grid <interval_mm>] [--grid-color <color>] [--text-color <color>]"
         );
         eprintln!("  Rotation modes: rightside-up (default), counter-clockwise, clockwise, upside-down");
-        eprintln!("  Grid colors: green (default), gray, red, blue, black, magenta, cyan");
+        eprintln!("  Colors: green, gray, red, blue, black, magenta, cyan");
+        eprintln!("  --text-color overrides calibration colors (red/blue/magenta) with a single color");
         process::exit(1);
     }
 
@@ -92,6 +97,7 @@ fn parse_args() -> Args {
     let mut rotation = Rotation::Normal;
     let mut grid_interval: Option<f32> = None;
     let mut grid_color = TextColor { r: 0.0, g: 0.6, b: 0.0 }; // default green
+    let mut text_color: Option<TextColor> = None;
 
     let mut i = 1;
     while i < args.len() {
@@ -141,6 +147,14 @@ fn parse_args() -> Args {
                     process::exit(1);
                 });
             }
+            "--text-color" => {
+                i += 1;
+                text_color = Some(parse_color(&args[i]).unwrap_or_else(|| {
+                    eprintln!("Unknown text color: {}", args[i]);
+                    eprintln!("Valid colors: green, gray, red, blue, black, magenta, cyan");
+                    process::exit(1);
+                }));
+            }
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
@@ -170,6 +184,7 @@ fn parse_args() -> Args {
         rotation,
         grid_interval,
         grid_color,
+        text_color,
     }
 }
 
@@ -224,13 +239,18 @@ fn main() {
             process::exit(1);
         });
 
-    // Build calibration fields with colored text.
+    // Build calibration fields. When --text-color is specified, all text
+    // and circles use that color. Otherwise, calibration colors are used.
+    let (header_color, row_color_a, row_color_b) = match args.text_color {
+        Some(c) => (c, c, c),
+        None => (TextColor::RED, TextColor::BLUE, TextColor::MAGENTA),
+    };
     let (text_fields, circle_marks) = pdf::build_calibration_fields(
         &form_offsets,
         &values,
-        TextColor::RED,
-        TextColor::BLUE,
-        TextColor::MAGENTA,
+        header_color,
+        row_color_a,
+        row_color_b,
     );
 
     let rotation_label = match args.rotation {
