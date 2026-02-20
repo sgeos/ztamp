@@ -8,7 +8,7 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.2 Black Text PoC (V0.2-M1-P9)
+**Name**: V0.2 Black Text PoC Regeneration (V0.2-M1-P10)
 **Status**: Complete
 **Started**: 2026-02-19
 
@@ -21,15 +21,13 @@ Current task state and verification log. This file is the shared source of truth
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.2-M1-P9-T1 | Add --text-color flag to CLI | Complete | `--text-color <color>` flag added to tanf-fill. When specified, all text and circle marks use the given color instead of calibration colors (red/blue/magenta). Accepts same named colors as --grid-color. |
-| V0.2-M1-P9-T2 | Generate black text PoC | Complete | `secret/calibration_sample.pdf` (90,565 bytes). No grid, black text, CCW rotation. 112 text fields, 8 circle marks. |
-| V0.2-M1-P9-T3 | Update documentation and commit | Complete | TASKLOG, REVERSE_PROMPT updated. |
+| V0.2-M1-P10-T1 | Generate black text PoC with adjusted alignments | Complete | `secret/calibration_sample.pdf` (90,565 bytes). No grid, black text, CCW rotation. 112 text fields, 8 circle marks. Uses human-adjusted alignment and position values. |
+| V0.2-M1-P10-T2 | Update documentation and commit | Complete | TASKLOG, REVERSE_PROMPT updated. |
 
 ## Notes
 
-- The --text-color flag is optional. Without it, calibration colors (red headers, blue/magenta alternating table rows) are used as before.
-- The smaller PDF size (90,565 vs 100,661 bytes) is due to the absence of grid lines.
-- The human pilot's manually adjusted alignment and position values in form_offsets.toml are preserved.
+- No code changes were needed. The --text-color flag from P9 was reused.
+- The human pilot manually adjusted alignment values in form_offsets.toml between P9 and P10. Many fields changed from "center" to "left", the employed_telephone field uses "right" alignment. Several position and width values were also refined.
 - Previous notes on printpdf API, form dimensions, coordinate system, alignment, and text width estimation remain valid.
 
 ## History
@@ -49,3 +47,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.2-M1-P7: Debug data fixes and text centering. Four-digit years, larger insurance ellipses, text centered within field widths. |
 | 2026-02-19 | V0.2-M1-P8: Alignment field. Alignment enum (Left, Center, Right) added to offsets and PDF rendering. All fields set to "center". |
 | 2026-02-19 | V0.2-M1-P9: Black text PoC. --text-color flag added to tanf-fill. Black text, no grid output generated. |
+| 2026-02-19 | V0.2-M1-P10: PoC regeneration with human-adjusted alignments and positions. No code changes. |
