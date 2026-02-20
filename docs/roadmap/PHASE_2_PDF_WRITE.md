@@ -4,31 +4,49 @@
 
 ## Purpose
 
-Build a Rust command-line utility that writes text strings and places images at specified positions on PDF files. This tool populates the government-issued job search form.
+Build PDF generation routines in the `rztamp` Rust library that create new PDF documents with the cleaned form image as a background layer and field data overlaid as native PDF text. These routines can be called from a CLI tool or directly from the Elixir application via NIF.
 
 ## Deliverables
 
-1. Rust CLI tool that writes text to specified coordinates on a PDF page.
-2. Rust CLI tool that places images at specified coordinates on a PDF page.
-3. Field position configuration file format for the government form.
-4. Integration with Elixir via `System.cmd/3`.
-5. Tests covering text placement, image placement, and form field mapping.
+1. `printpdf` added as a dependency to `rztamp`.
+2. Rust routine that creates a new PDF with the form template image as background.
+3. Rust routine that overlays text at specified coordinates on the form.
+4. Field offset calibration against the template image using a generate-inspect-adjust loop with colored text.
+5. Calibrated form offsets in `assets/form/form_offsets.toml`.
+6. Tests covering text placement and form field mapping.
 
 ## Design
 
-The government PDF is a flat scanned image (CCITT Group 4 fax-encoded bitmap, 1704x2200 pixels, 1-bit depth). It contains no AcroForm or XFA form fields. Text and images must be overlaid at specific pixel coordinates.
+The government PDF is a flat scanned image (CCITT Group 4 fax-encoded bitmap, 1704x2200 pixels, 1-bit depth). It contains no AcroForm or XFA form fields.
 
-The CLI tool interface follows the pattern:
-```
-utility --write-text "text" --x 100 --y 200 --font-size 12 input.pdf output.pdf
-utility --place-image screenshot.png --x 100 --y 200 --width 300 input.pdf output.pdf
-```
+The strategy is to generate new PDFs from scratch rather than modifying the original.
 
-A field position file maps logical field names (for example, "employer_name_row_1") to coordinates and dimensions on the form. This allows the Elixir application to populate the form by iterating over field definitions.
+1. Load the cleaned form template image (`assets/form/template.tiff`).
+2. Create a new PDF with `printpdf`.
+3. Place the template image as the page background.
+4. Overlay field data as native PDF text at coordinates defined in `assets/form/form_offsets.toml`.
+5. The result is a clean PDF with selectable text.
+
+### Coordinate System
+
+Field offsets use millimeters from the top-left corner of the page (US Letter, 215.9mm x 279.4mm). This maps naturally to `printpdf`'s coordinate system and to visual inspection of the template image.
+
+### Calibration
+
+Initial field offsets are visual estimates. Calibration uses a generate-inspect-adjust loop.
+
+1. Generate a test PDF with colored text at all field positions.
+2. Visually inspect the output against the template.
+3. Adjust coordinates in `form_offsets.toml`.
+4. Repeat until field positions are accurate.
+
+### PDF Routine Location
+
+PDF generation routines live in the `rztamp` library. This allows them to be used from a CLI tool, from NIF bindings in the Elixir application, or from any other Rust consumer.
 
 ## Key Decision
 
-**D1 resolved**: Rust CLI utility using `lopdf` crate for PDF manipulation, called from Elixir via `System.cmd/3`. See [RESOLVED.md](../decisions/RESOLVED.md).
+**R1 refined**: Use `printpdf` for new PDF generation with template image background. Reserve `lopdf` for future PDF manipulation needs (V0.3 concatenation). See [RESOLVED.md](../decisions/RESOLVED.md).
 
 ## Dependencies
 

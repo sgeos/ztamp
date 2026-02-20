@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TANF Job Search Automation tool. Automates job search documentation for Temporary Assistance for Needy Families (TANF) compliance, including government PDF form population, job application tracking, and receipt screenshot capture.
 
-**Status**: V0.1 Project Structure. Phoenix/LiveView app scaffolded with Rust NIF integration.
+**Status**: V0.1 Complete. Phoenix/LiveView app scaffolded with Rust NIF integration. Field extraction and form offsets done. Ready for V0.2 (PDF Write PoC).
 
 ## Technology Stack
 

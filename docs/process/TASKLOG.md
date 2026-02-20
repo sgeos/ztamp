@@ -8,33 +8,31 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: Field Extraction and Form Offsets (V0.1-M1-P2)
+**Name**: Documentation Update and V0.1 Status (V0.1-M1-P3)
 **Status**: Complete
 **Started**: 2026-02-19
 
 ## Success Criteria
 
-- [x] Extract field values from the original PDF to `secret/secrets.toml`.
-- [x] Generate form field offsets and store in `assets/form/form_offsets.toml`.
 - [x] Update relevant documentation.
+- [x] Report on any remaining V0.1 work.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.1-M1-P2-T1 | Create non-confidential assets directory | Complete | `assets/form/` created with `template.tiff` copied from `secret/form.tiff`. |
-| V0.1-M1-P2-T2 | Extract field values from PDF | Complete | 8 fields extracted to `secret/secrets.toml`. Values verified against PDF visual inspection. |
-| V0.1-M1-P2-T3 | Update secrets.toml.example | Complete | Template expanded with `[job_search]` and `[submission]` sections. |
-| V0.1-M1-P2-T4 | Generate form field offsets | Complete | 40+ field positions in `assets/form/form_offsets.toml`. Coordinates in mm from top-left. |
-| V0.1-M1-P2-T5 | Update CLAUDE.md structure diagram | Complete | `assets/form/` added to repository structure. |
-| V0.1-M1-P2-T6 | Update process files and commit | Complete | TASKLOG.md, REVERSE_PROMPT.md updated. |
+| V0.1-M1-P3-T1 | Update PHASE_1_STRUCTURE.md | Complete | Status set to Complete with deliverable verification table. |
+| V0.1-M1-P3-T2 | Update PHASE_2_PDF_WRITE.md | Complete | Rewritten to reflect printpdf strategy, form offsets location, calibration approach, rztamp as routine location. |
+| V0.1-M1-P3-T3 | Update RESOLVED.md (R1) | Complete | R1 refined: printpdf for generation, lopdf reserved for V0.3. Workflow, rationale, and residual questions updated. |
+| V0.1-M1-P3-T4 | Update PRIORITY.md | Complete | Field coordinate and lopdf-vs-printpdf questions marked resolved. TIFF compatibility question added. |
+| V0.1-M1-P3-T5 | Update CLAUDE.md status | Complete | Status updated to "V0.1 Complete". |
+| V0.1-M1-P3-T6 | Write REVERSE_PROMPT.md and commit | Complete | V0.1 status report and documentation summary. |
 
 ## Notes
 
-- The prompt specified `secrets/form_offsets.toml` (with trailing 's') but the project uses `secret/` (no trailing 's'). Since form offsets are not confidential, they were placed in `assets/form/form_offsets.toml` per the prompt comments requesting a non-confidential directory.
-- Field offset coordinates are initial estimates from visual inspection. They require calibration during V0.2 (PDF Write PoC).
-- The `secret/form.png` file caused API errors due to media type mismatch (noted in prompt comments). The TIFF version was used as the canonical template.
-- PDF manipulation routines will be defined in the `rztamp` library as noted in the prompt comments.
+- V0.1 is complete. All 5 deliverables verified (Phoenix app, NIF integration, database, test framework, dev environment docs).
+- The human pilot reordered `secrets.toml` sections and improved `secrets.toml.example` with representative placeholder values.
+- Four decisions from the previous reverse prompt were resolved in the prompt comments.
 
 ## History
 
@@ -43,3 +41,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.0: Process definition, knowledge graph, PDF analysis, roadmap, decision resolution. |
 | 2026-02-19 | V0.1-M1-P1: Project structure generated. rztamp Rust library, ztamp Phoenix project, NIF bridge with Rustler, secrets.toml.example. |
 | 2026-02-19 | V0.1-M1-P2: Field extraction and form offsets. secrets.toml populated, form_offsets.toml created in assets/form/, documentation updated. |
+| 2026-02-19 | V0.1-M1-P3: Documentation update and V0.1 status report. Phase docs, decision records, and CLAUDE.md updated. V0.1 declared complete. |

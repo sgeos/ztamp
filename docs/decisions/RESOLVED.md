@@ -27,34 +27,35 @@ This finding invalidates the original assumption that the form uses AcroForm fie
 
 | Aspect | Decision |
 |--------|----------|
-| Tool | Custom Rust CLI utility |
-| PDF library | `lopdf` crate (or equivalent low-level Rust PDF library) |
-| Approach | Overlay text and images at specified pixel coordinates on the scanned PDF page |
-| Integration | Called from Elixir via `System.cmd/3` |
-| Configuration | Field position file mapping logical names to coordinates and dimensions |
+| PDF generation library | `printpdf` crate |
+| PDF manipulation library | `lopdf` crate (reserved for V0.3 concatenation) |
+| Approach | Generate new PDFs with cleaned form image as background, overlay text at defined coordinates |
+| Routine location | `rztamp` Rust library (usable from CLI, NIF, or other Rust consumers) |
+| Integration | Via NIF or `System.cmd/3` from Elixir |
+| Configuration | `assets/form/form_offsets.toml` mapping field names to mm coordinates |
+| Coordinate system | Millimeters from top-left corner of US Letter page |
+| Calibration | Generate-inspect-adjust loop with colored text |
 
-### Interface
+### Workflow
 
-```
-utility --write-text "text" --x 100 --y 200 --font-size 12 input.pdf output.pdf
-utility --place-image screenshot.png --x 100 --y 200 --width 300 input.pdf output.pdf
-```
-
-The utility is called multiple times to fill out the form, once per field or image placement. A configuration file maps field names to positions, enabling the Elixir application to iterate over field definitions.
+1. Load cleaned form template image (`assets/form/template.tiff`).
+2. Create a new PDF with `printpdf`.
+3. Place the template image as the page background.
+4. Overlay field data as native PDF text at coordinates from `form_offsets.toml`.
+5. Output a clean PDF with selectable text.
 
 ### Rationale
 
-- The human pilot specified Rust CLI tooling as the preferred approach.
-- `lopdf` provides low-level PDF object manipulation needed for adding content streams to an existing page.
-- A standalone CLI tool avoids NIF complexity for an operation that is inherently batch-oriented (not latency-sensitive).
+- `printpdf` creates new PDF documents from scratch with a high-level API for text, images, and vector graphics. This produces clean, searchable PDFs where text is native rather than pixel data.
+- The human pilot confirmed that PDF manipulation routines should live in `rztamp` for portability across CLI tools and the Elixir application.
+- `lopdf` is reserved for future low-level PDF manipulation (V0.3 concatenation of filled forms with screenshot PDFs).
 - The field position configuration file decouples form layout from application logic, supporting future form revisions.
 
 ### Residual Sub-Questions
 
-- Exact coordinate mapping for each field on the government form (requires measurement).
 - Font selection and embedding for text overlay.
-- Whether `lopdf` or an alternative crate (such as `printpdf` for content stream generation) is more suitable for overlaying content on existing pages.
 - Image format and resolution requirements for placed images.
+- Whether the template TIFF image requires format conversion for `printpdf` compatibility.
 
 ---
 
@@ -119,3 +120,4 @@ The utility is called multiple times to fill out the form, once per field or ima
 |------|--------|---------|
 | 2026-02-19 | Claude | Initial creation. |
 | 2026-02-19 | Claude | R1-R3 resolved. D1 revised based on PDF analysis (flat scan, not AcroForm). D2 and D3 standardized on Wallaby per human direction. |
+| 2026-02-19 | Claude | R1 refined: `printpdf` for PDF generation, `lopdf` reserved for V0.3 concatenation. Form offsets in `assets/form/form_offsets.toml`. Calibration via generate-inspect-adjust loop. |

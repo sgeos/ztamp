@@ -35,9 +35,10 @@ The following questions are anticipated for future phases but do not block curre
 
 | Question | Phase | Notes |
 |----------|-------|-------|
-| Exact field coordinate mapping for government form | V0.2 | Requires measurement against BaseForm.pdf |
-| Font selection and embedding for text overlay | V0.2 | Determine during Rust CLI implementation |
-| `lopdf` vs `printpdf` for content stream overlay | V0.2 | Evaluate during PoC |
+| ~~Exact field coordinate mapping for government form~~ | ~~V0.2~~ | Resolved. Initial estimates in `assets/form/form_offsets.toml`. Calibration in V0.2. |
+| Font selection and embedding for text overlay | V0.2 | Determine during `printpdf` implementation |
+| ~~`lopdf` vs `printpdf` for content stream overlay~~ | ~~V0.2~~ | Resolved. `printpdf` for generation, `lopdf` reserved for V0.3 concatenation. |
+| Template TIFF compatibility with `printpdf` | V0.2 | May require format conversion |
 
 ### From R2/R3: Browser Automation
 
@@ -54,3 +55,4 @@ The following questions are anticipated for future phases but do not block curre
 |------|--------|---------|
 | 2026-02-19 | Claude | Initial creation with D1 (PDF), D2 (screenshot), D3 (browser automation). |
 | 2026-02-19 | Claude | D1-D3 resolved. Moved to RESOLVED.md as R1-R3. |
+| 2026-02-19 | Claude | R1 open questions: field coordinates resolved (initial estimates), lopdf vs printpdf resolved (printpdf). |

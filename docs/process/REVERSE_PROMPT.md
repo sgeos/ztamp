@@ -9,80 +9,72 @@ This file is the AI-to-human communication channel. It is overwritten after each
 ## Last Updated
 
 **Date**: 2026-02-19
-**Task**: V0.1-M1-P2 Field Extraction and Form Offsets
+**Task**: V0.1-M1-P3 Documentation Update and V0.1 Status
 
 ---
 
-## Verification
+## V0.1 Status Report
 
-### Field Extraction (secret/secrets.toml)
+V0.1 (Project Structure) is **complete**. All five deliverables have been verified.
 
-Eight field values were extracted from the original PDF by visual inspection.
+| Deliverable | Status | Verification |
+|-------------|--------|--------------|
+| Phoenix application with LiveView | Complete | `ztamp/` scaffolded. Phoenix 1.8.3, LiveView 1.1.24. |
+| Rust NIF integration via Rustler | Complete | `rztamp/` library. `ztamp/native/nif/` bridge. `Ztamp.Nif.alive/0` calls through to `rztamp::alive()`. |
+| Database setup (PostgreSQL via Ecto) | Complete | `mix ecto.create` run successfully by human pilot. |
+| Test framework configured | Complete | ExUnit: 5 tests pass. `cargo test`: 1 test passes. |
+| Development environment documentation | Complete | `CLAUDE.md` documents structure, stack, and workflow. `docs/` knowledge graph established. |
 
-| Field | Value |
-|-------|-------|
-| Case Name | BRENDAN SECHTER |
-| UPI Number | 58036400 |
-| Job Search From | 03/16/2026 |
-| Job Search To | 03/22/2026 |
-| Job Search Hours | 30 |
-| Submission Deadline Time | 05:00 pm |
-| Submission Deadline Date | 04/01/2026 |
-| Submission Location | Belrose |
+Additional work completed during V0.1 beyond original deliverables includes field value extraction (`secret/secrets.toml`), form field offset generation (`assets/form/form_offsets.toml`), and a non-confidential assets directory (`assets/form/`).
 
-The `secrets.toml.example` template was expanded to include `[job_search]` and `[submission]` sections matching the populated `secrets.toml`.
-
-### Non-Confidential Assets Directory (assets/form/)
-
-Created `assets/form/` to hold non-confidential form-related files, per the prompt comments requesting a directory for data such as the form template and field offsets.
-
-| File | Description |
-|------|-------------|
-| `assets/form/template.tiff` | Cleaned form image (copied from `secret/form.tiff`). Base layer for PDF generation. |
-| `assets/form/form_offsets.toml` | Field positions for all form fields. |
-
-### Form Field Offsets (assets/form/form_offsets.toml)
-
-Field offsets were generated for all fields listed in the prompt objectives. The coordinate system uses millimeters from the top-left corner of the page (US Letter, 215.9mm x 279.4mm). Fields covered include the following.
-
-**Header fields**: case_name, upi_number, job_search_from, job_search_to, job_search_hours, submission_deadline_time, submission_deadline_date, submission_location.
-
-**Signature fields (above table)**: participant_signature_top, participant_signature_top_date.
-
-**Job application table**: 10 rows with 9 columns (date, employer_name_address, how_contact_made, telephone_fax, telephone_number, internet_confirmation, time_in, time_out, office_use_only). Row positions are computed from `first_row_y` and `row_height` parameters.
-
-**"Should you become employed" section**: employer name/address/telephone (3 lines plus telephone), start_date, hours_per_week, hourly_rate, pay frequency options (weekly, biweekly, semimonthly, monthly), date of first check (month/day/year), tips, job_title, insurance options (none, employer_paid, employee_paid, both_paid).
-
-**Signature fields (bottom of form)**: participant_signature_bottom, participant_signature_bottom_date.
-
-All coordinates are initial estimates derived from visual inspection. They require calibration against the template image during V0.2 (PDF Write PoC).
-
-### CLAUDE.md Updated
-
-Repository structure diagram updated to include `assets/form/` with `template.tiff` and `form_offsets.toml`.
+**The project is ready to advance to V0.2 (PDF Write PoC).**
 
 ---
 
-## Path Discrepancy Note
+## Documentation Updates
 
-The prompt specified `secrets/form_offsets.toml` (with trailing 's'). The project convention uses `secret/` (without trailing 's'). Since form offsets describe a government form layout and are not confidential, they were placed in `assets/form/form_offsets.toml` instead. This follows the prompt comments that requested a non-confidential directory for the form and its offsets.
+### Phase Documentation
+
+- **PHASE_1_STRUCTURE.md**: Status updated to Complete with a deliverable verification table. Additional completed work documented.
+- **PHASE_2_PDF_WRITE.md**: Rewritten to reflect the refined strategy. `printpdf` for PDF generation. Routines in `rztamp`. Form offsets in `assets/form/form_offsets.toml`. Calibration via generate-inspect-adjust loop with colored text.
+
+### Decision Records
+
+- **RESOLVED.md (R1)**: Refined to specify `printpdf` for new PDF generation and `lopdf` reserved for V0.3 concatenation. Updated workflow, rationale, and residual sub-questions.
+- **PRIORITY.md**: Field coordinate mapping and `lopdf`-vs-`printpdf` questions marked as resolved. New question added for template TIFF compatibility with `printpdf`.
+
+### Project Root
+
+- **CLAUDE.md**: Status updated to "V0.1 Complete. Ready for V0.2 (PDF Write PoC)."
+
+---
+
+## Decisions Incorporated from Prompt Comments
+
+The following four decisions from the previous reverse prompt were resolved by the human pilot in this prompt.
+
+| Question | Resolution | Action Taken |
+|----------|------------|--------------|
+| Form offsets location | Acceptable in `assets/form/` | No change needed. |
+| Coordinate system (mm from top-left) | Acceptable as long as it works | No change needed. Documented in Phase 2. |
+| Calibration approach | Generate, inspect, adjust loop with colored text | Documented in Phase 2 and R1. |
+| `printpdf` dependency timing | Can be added now | Documented in Phase 2. Actual dependency addition deferred to first V0.2 prompt. |
+
+---
+
+## Remaining V0.1 Work
+
+None. V0.1 is complete.
 
 ---
 
 ## Questions for Human Review
 
-1. **Form offsets location.** The offsets were placed in `assets/form/form_offsets.toml` rather than `secret/form_offsets.toml`. Is this acceptable, or should they be moved to the `secret/` directory?
-
-2. **Offset coordinate system.** Coordinates are in millimeters from the top-left corner. This maps naturally to how `printpdf` can work and to visual inspection of the template image. Is this coordinate system acceptable for V0.2, or would PDF points (origin at bottom-left) be preferred?
-
-3. **Offset calibration.** The current offsets are estimates. During V0.2, they will need calibration by generating a test PDF and comparing the output against the template. Should the calibration be done interactively (generate, inspect, adjust) or should a programmatic approach be explored (for example, placing markers at known positions)?
-
-4. **PDF library for rztamp.** The previous reverse prompt recommended `printpdf` for PDF generation. The prompt comments confirmed that PDF manipulation routines should be defined in the `rztamp` library. Should `printpdf` be added as a dependency to `rztamp` now, or deferred to the V0.2 prompt?
+No blocking questions at this time. The next step is to begin V0.2 (PDF Write PoC) when the human pilot is ready.
 
 ---
 
 ## Notes
 
-- The `secret/form.png` file causes API errors due to a media type mismatch (the file metadata claims PNG but the content may not match). The TIFF version works correctly and was used as the canonical template.
-- The form image is rotated 90 degrees counter-clockwise when viewed as a raw image. The PDF renderer corrects this orientation. The template.tiff retains the original orientation from the PDF.
-- The example row in the job search table (showing "Made-Up Company" etc.) is part of the printed form, not filled-in data. It is visible in the template image and does not need to be cleared.
+- The human pilot reordered sections in `secrets.toml` (moving `[form]` above `[participant]`) and improved `secrets.toml.example` with representative placeholder values. These changes have been noted.
+- The `printpdf` dependency has not been added to `rztamp/Cargo.toml` yet. The prompt comments said it "can be added now" but no explicit objective in this prompt requested it. It will be added in the first V0.2 prompt.
