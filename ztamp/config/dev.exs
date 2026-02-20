@@ -90,3 +90,11 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+# Wallaby browser automation (non-headless Chrome for screenshot capture).
+config :wallaby,
+  driver: Wallaby.Chrome,
+  screenshot_dir: Path.expand("../../secret/screenshots", __DIR__),
+  chromedriver: [
+    headless: false
+  ]

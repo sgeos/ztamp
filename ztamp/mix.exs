@@ -21,7 +21,7 @@ defmodule Ztamp.MixProject do
   def application do
     [
       mod: {Ztamp.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :ex_unit]
     ]
   end
 
@@ -66,7 +66,8 @@ defmodule Ztamp.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      {:rustler, "~> 0.34"}
+      {:rustler, "~> 0.34"},
+      {:wallaby, "~> 0.30", runtime: false}
     ]
   end
 

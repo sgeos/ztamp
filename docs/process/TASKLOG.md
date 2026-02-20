@@ -8,31 +8,36 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.3 PDF Concatenation Tool (V0.3-M1-P1)
+**Name**: V0.4 Screenshot Capture Workflow (V0.4-M1-P1)
 **Status**: Complete
-**Started**: 2026-02-19
+**Started**: 2026-02-20
 
 ## Success Criteria
 
-- [x] V0.2 merged into main.
-- [x] Concatenation tool generated.
-- [x] Four PoCs concatenated.
+- [x] V0.3 merged into main.
+- [x] V0.4 functionality implemented as best as possible as long as there are no blockers.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.3-M1-P1-T1 | Merge V0.2 into main | Complete | `feat/v02-pdf-write-poc` fast-forwarded into `main`. All V0.2 commits now on main. |
-| V0.3-M1-P1-T2 | Create feat/v03-pdf-concatenation branch | Complete | Branch created from main at commit 6e91a09. |
-| V0.3-M1-P1-T3 | Create tanf-concat tool | Complete | New binary `tanf-concat` added to tools/. Uses `lopdf` 0.39 for PDF merging. CLI: `tanf-concat --output <path> <input1.pdf> <input2.pdf> ...`. Refuses to overwrite existing output. Requires at least two input files. |
-| V0.3-M1-P1-T4 | Concatenate four PoCs | Complete | `secret/poc_combined.pdf` (354,455 bytes). Contains all four PoC pages in order: production, almost production, testing, debug. |
+| V0.4-M1-P1-T1 | Merge V0.3 into main | Complete | `feat/v03-pdf-concatenation` fast-forwarded into `main`. |
+| V0.4-M1-P1-T2 | Add Wallaby dependency | Complete | `wallaby ~> 0.30` added to mix.exs with `runtime: false`. `:ex_unit` added to `extra_applications`. `mix deps.get` succeeded. |
+| V0.4-M1-P1-T3 | Configure Wallaby | Complete | `config/dev.exs` configured with `Wallaby.Chrome` driver, `headless: false`, screenshot_dir pointing to `secret/screenshots/`. |
+| V0.4-M1-P1-T4 | Create database migration | Complete | `job_search_entries` table created with date, employer_name_address, how_contact_made, telephone_fax, telephone_number, internet_confirmation, time_in, time_out, screenshot_path columns. `mix ecto.migrate` succeeded. |
+| V0.4-M1-P1-T5 | Create JobSearch schema and context | Complete | `Ztamp.JobSearch.Entry` schema and `Ztamp.JobSearch` context module with CRUD operations. |
+| V0.4-M1-P1-T6 | Create BrowserServer GenServer | Complete | `Ztamp.BrowserServer` manages a single Wallaby Chrome session. Client API: start_browser, stop_browser, take_screenshot, status. Added to supervision tree. |
+| V0.4-M1-P1-T7 | Create JobSearchLive LiveView | Complete | Form with autopopulated defaults (today's date, current time). Browser control buttons. Screenshot capture button. Entries table. Route at `/job-search`. |
+| V0.4-M1-P1-T8 | Create screenshot directory | Complete | `secret/screenshots/.gitkeep` created. |
 
 ## Notes
 
-- The `lopdf` crate (0.39) is used for PDF merging. The merge follows the canonical lopdf pattern: renumber object IDs, collect pages and objects, stitch together the Catalog and Pages tree.
-- Bookmark/outline objects from source documents are discarded during merge (standard lopdf behavior).
-- The `rayon` feature is enabled by default in lopdf for parallelized PDF parsing.
-- Previous notes on printpdf API, form dimensions, coordinate system, alignment, labels flag, watermark, circle-all, debug-fill, and text width estimation remain valid.
+- **ChromeDriver blocker**: ChromeDriver is not installed. MacPorts provides v136 but Chrome is v145. User must install ChromeDriver v145 from Chrome for Testing (https://googlechromelabs.github.io/chrome-for-testing/) before the browser workflow can be tested end-to-end.
+- Wallaby requires `:ex_unit` in `extra_applications` to function outside of test env. This is a known workaround.
+- The BrowserServer starts in idle state (no Chrome session). Chrome launches only when the user clicks "Start Browser" on the LiveView page.
+- `time_in`, `time_out`, and `screenshot_path` are required fields. The screenshot path is populated by the BrowserServer on capture.
+- `row_number` is not stored in the database. Row position is determined at PDF export time.
+- Form fields match the job search table columns from form_offsets.toml.
 
 ## History
 
@@ -50,3 +55,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-19 | V0.2-M1-P14: Debug fill flag. --debug-fill gates hardcoded test data. Three PoCs regenerated. |
 | 2026-02-19 | V0.2-M1-P15: Four PoC variants. Fixed missing-value handling. Gated table behind fill_table. Production PoC with secrets-only data. |
 | 2026-02-19 | V0.3-M1-P1: V0.2 merged to main. PDF concatenation tool created. Four PoCs concatenated. |
+| 2026-02-20 | V0.4-M1-P1: V0.3 merged to main. Screenshot capture workflow with Wallaby, LiveView, and PostgreSQL. |

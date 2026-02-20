@@ -1,0 +1,94 @@
+<.header>
+  Job Search Screenshot Capture
+  <:subtitle>
+    Enter job application details and capture confirmation page screenshots.
+  </:subtitle>
+</.header>
+
+<div class="mt-6 space-y-6">
+  <%!-- Browser Control --%>
+  <div class="card bg-base-200 p-4">
+    <h2 class="text-md font-semibold mb-2">Browser Control</h2>
+    <div class="flex items-center gap-4 mb-3">
+      <div class={[
+        "badge",
+        @browser_status.active && "badge-success",
+        !@browser_status.active && "badge-neutral"
+      ]}>
+        <%= if @browser_status.active, do: "Active", else: "Inactive" %>
+      </div>
+      <span :if={@browser_status.current_url} class="text-sm truncate max-w-md">
+        {@browser_status.current_url}
+      </span>
+    </div>
+    <div class="flex gap-2">
+      <.button :if={!@browser_status.active} phx-click="start_browser" variant="primary">
+        Start Browser
+      </.button>
+      <.button :if={@browser_status.active} phx-click="stop_browser">
+        Stop Browser
+      </.button>
+      <.button phx-click="refresh_status">
+        Refresh Status
+      </.button>
+    </div>
+  </div>
+
+  <%!-- Entry Form --%>
+  <.form for={@form} phx-change="validate" phx-submit="take_screenshot">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <.input field={@form[:date]} type="date" label="Date" required />
+      <.input
+        field={@form[:employer_name_address]}
+        type="text"
+        label="Employer Name & Address"
+        required
+      />
+      <.input
+        field={@form[:how_contact_made]}
+        type="select"
+        label="How Contact Made"
+        options={["Internet", "In Person", "Phone", "Fax", "Email"]}
+        prompt="Select method..."
+        required
+      />
+      <.input
+        field={@form[:telephone_fax]}
+        type="select"
+        label="T/F/E"
+        options={[{"Telephone", "T"}, {"Fax", "F"}, {"Email", "E"}]}
+        prompt="Select..."
+      />
+      <.input field={@form[:telephone_number]} type="tel" label="Phone/Fax Number" />
+      <.input
+        field={@form[:internet_confirmation]}
+        type="text"
+        label="Internet Confirmation #"
+      />
+      <.input field={@form[:time_in]} type="text" label="Time In" placeholder="9:00" />
+      <.input field={@form[:time_out]} type="text" label="Time Out" placeholder="10:30" />
+    </div>
+
+    <div class="flex gap-2 pt-4">
+      <.button type="submit" variant="primary" disabled={!@browser_status.active}>
+        Take Screenshot & Save Entry
+      </.button>
+    </div>
+  </.form>
+
+  <%!-- Entries Table --%>
+  <div>
+    <h2 class="text-md font-semibold mb-2">Captured Entries</h2>
+    <.table :if={@entries != []} id="entries" rows={@entries}>
+      <:col :let={entry} label="Date">{entry.date}</:col>
+      <:col :let={entry} label="Employer">{entry.employer_name_address}</:col>
+      <:col :let={entry} label="Contact">{entry.how_contact_made}</:col>
+      <:col :let={entry} label="T/F/E">{entry.telephone_fax}</:col>
+      <:col :let={entry} label="Confirmation">{entry.internet_confirmation}</:col>
+      <:col :let={entry} label="Screenshot">
+        <span :if={entry.screenshot_path} class="badge badge-success badge-sm">Captured</span>
+      </:col>
+    </.table>
+    <p :if={@entries == []} class="text-base-content/50 text-sm">No entries yet.</p>
+  </div>
+</div>

@@ -12,23 +12,29 @@ This file is a staging area for complex human-to-AI instructions. The human pilo
 
 Answers to questions in the reverse prompt.
 
-1. PoC is fine.
-2. Time to move onto concatenation.
+1. Combined PDF is acceptable.
+2. Page order is acceptable.
+3. V0.3 is complete.
 
 ## Objectives
 
-### Merge V0.2 Into Main
+### Merge V0.3 Into Main
 
-Merge V0.2 into main.
+Merge V0.3 into main.
 
-#### Create PDF Concatenation Tool
+#### Start V0.4
 
-Create a PDF concatenation in the V0.3 branch.
-This should be a new tool.
+The V0.4 goal is some sort of workflow that allows Wallaby to perform screen captures.
+If it can attach to a running browser window, this is ideal.
+If not, it will need to launch a browser it can use to capture screenshots.
+There should be a page that allows me to fill out details for project application rows,
+along with a button to take a screenshot.
 
-#### Concatenate Four Existing PoCs
+When the button is pressed:
 
-Concatenate the four existing PoCs into a new document with a new name.
+- A screenshot is saved in a subdirectory in secrets.
+- A database entry including the form information and the screenshot
+  are stored in the database.
 
 ## Context
 
@@ -40,9 +46,8 @@ Concatenate the four existing PoCs into a new document with a new name.
 
 ## Success Criteria
 
-- V0.2 merged into main.
-- Concatenation tool generated.
-- Four PoCs concatenated.
+- V0.3 merged into main.
+- V0.4 functionality implemented as best as possible as long as there are no blockers.
 
 ## Notes
 

@@ -12,9 +12,7 @@ defmodule Ztamp.Application do
       Ztamp.Repo,
       {DNSCluster, query: Application.get_env(:ztamp, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Ztamp.PubSub},
-      # Start a worker by calling: Ztamp.Worker.start_link(arg)
-      # {Ztamp.Worker, arg},
-      # Start to serve requests, typically the last entry
+      Ztamp.BrowserServer,
       ZtampWeb.Endpoint
     ]
 
