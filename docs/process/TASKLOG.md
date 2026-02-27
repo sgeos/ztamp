@@ -8,39 +8,25 @@ Current task state and verification log. This file is the shared source of truth
 
 ## Current Task
 
-**Name**: V0.5 Dashboard, Export, and Landing Page Improvements (V0.5-M1-P5)
+**Name**: V0.5 Reverse Prompt Response (V0.5-M1-P6)
 **Status**: Complete
-**Started**: 2026-02-20
+**Started**: 2026-02-27
 
 ## Success Criteria
 
-- [x] Update job search dashboard as requested.
-- [x] Fix date filtering.
-- [x] Update Phoenix landing page.
-- [x] Style all pages according to the selected landing page style.
-- [x] Update export manifest location.
-- [x] Update PDF export as requested.
-- [x] Add watermarking checkbox.
+- [x] Changes mentioned in the comments implemented.
 
 ## Task Breakdown
 
 | ID | Task | Status | Verification |
 |----|------|--------|--------------|
-| V0.5-M1-P5-T1 | Remove Internet Confirmation # from form | Complete | Removed input from main form and edit modal. Auto-set to "Yes" on entry creation. Table column shows Yes/No based on screenshot_path. |
-| V0.5-M1-P5-T2 | Fix "To present" checkbox position | Complete | Moved checkbox above the To Date input, beside the label. |
-| V0.5-M1-P5-T3 | Update Phoenix landing page | Complete | Replaced default Phoenix page with TANF-specific cards linking to Job Search, LiveView Dashboard, and Mailbox. Updated app navbar with Home, Job Search, Dashboard links and TANF branding. Widened main container to max-w-4xl. |
-| V0.5-M1-P5-T4 | Update export manifest location | Complete | Changed manifest temp file from `/tmp` to `secret/`. Manifest is cleaned up after export. |
-| V0.5-M1-P5-T5 | Add signatures to PDF export | Complete | Top and bottom signature fields populated with "SIGNATURE HERE" and export date (MM/DD/YYYY). Export date added to manifest JSON. |
-| V0.5-M1-P5-T6 | Auto-set internet confirmation in PDF | Complete | PDF export sets internet_confirmation to "Yes" if screenshot_path is not empty, "No" otherwise. Handled in both Elixir manifest builder and Rust table row builder. |
-| V0.5-M1-P5-T7 | Rotate landscape screenshots | Complete | Screenshots wider than tall are rotated 90 degrees CCW before placement in the PDF. Uses image crate for detection and rotation. |
-| V0.5-M1-P5-T8 | Add watermark support | Complete | Watermark checkbox next to Export PDF button. When enabled, all pages get "TEST SAMPLE" diagonal red text via WatermarkConfig. Extracted shared build_watermark_ops helper in rztamp. Added --watermark flag to tanf-export CLI. |
+| V0.5-M1-P6-T1 | Change watermark to pure red | Complete | Changed watermark color from washed-out red (1.0, 0.5, 0.5) to `TextColor::RED` (1.0, 0.0, 0.0) in tanf-export. |
+| V0.5-M1-P6-T2 | Gate dev-only links | Complete | Dashboard navbar link gated with `:if={@dev_routes}`. Landing page Dashboard and Mailbox cards gated with `:if={@dev_routes}`. Uses `Application.compile_env(:ztamp, :dev_routes, false)` via module attribute. |
 
 ## Notes
 
-- Theme persistence is handled by the existing root layout JavaScript. Theme selected on any page applies to all pages.
-- The watermark uses a washed-out red color (RGB 1.0, 0.5, 0.5) at 72pt to approximate 50% opacity without PDF graphics state manipulation.
-- The tanf-export binary must be rebuilt after this update: `cd tools && cargo build --release`.
-- Landscape screenshot rotation uses the `image` crate's `rotate270()` (CCW 90) and re-encodes as PNG.
+- The `dev_routes` flag is evaluated at compile time. In dev mode, the links appear. In prod mode, they are omitted from the rendered HTML.
+- The PageController passes `dev_routes` as an assign to the home template. The Layouts module injects it via `assign_new` so it is available in the app layout navbar.
 
 ## History
 
@@ -63,3 +49,4 @@ Current task state and verification log. This file is the shared source of truth
 | 2026-02-20 | V0.4-M1-P3: V0.4 merged to main. Schema migration, form improvements, date filtering, entry modal, screenshot serving, browser landing page, README documentation. |
 | 2026-02-20 | V0.5-M1-P4: Bug fixes (default, filtering, display). PDF export with cover page, TANF forms, and screenshot pages. |
 | 2026-02-20 | V0.5-M1-P5: Dashboard improvements, landing page, export enhancements (signatures, rotation, watermark), manifest location. |
+| 2026-02-27 | V0.5-M1-P6: Reverse prompt response. Pure red watermark. Dev-only link gating. |

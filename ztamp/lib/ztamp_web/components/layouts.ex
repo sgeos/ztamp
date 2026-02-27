@@ -5,6 +5,8 @@ defmodule ZtampWeb.Layouts do
   """
   use ZtampWeb, :html
 
+  @dev_routes Application.compile_env(:ztamp, :dev_routes, false)
+
   # Embed all files in layouts/* within this module.
   # The default root.html.heex file contains the HTML
   # skeleton of your application, namely HTML headers
@@ -34,6 +36,8 @@ defmodule ZtampWeb.Layouts do
   slot :inner_block, required: true
 
   def app(assigns) do
+    assigns = assign_new(assigns, :dev_routes, fn -> @dev_routes end)
+
     ~H"""
     <header class="navbar px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
@@ -50,7 +54,7 @@ defmodule ZtampWeb.Layouts do
           <li>
             <a href="/job-search" class="btn btn-ghost">Job Search</a>
           </li>
-          <li>
+          <li :if={@dev_routes}>
             <a href="/dev/dashboard" class="btn btn-ghost">Dashboard</a>
           </li>
           <li>

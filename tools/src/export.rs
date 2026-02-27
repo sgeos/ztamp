@@ -559,7 +559,7 @@ fn main() {
     let watermark_config = if args.watermark {
         Some(WatermarkConfig {
             text: "TEST SAMPLE".to_string(),
-            color: TextColor { r: 1.0, g: 0.5, b: 0.5 },
+            color: TextColor::RED,
             font_size: 72.0,
         })
     } else {

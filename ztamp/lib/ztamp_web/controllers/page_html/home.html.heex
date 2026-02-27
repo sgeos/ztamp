@@ -14,14 +14,14 @@
     </p>
   </a>
 
-  <a href="/dev/dashboard" class="card bg-base-200 hover:bg-base-300 transition p-6">
+  <a :if={@dev_routes} href="/dev/dashboard" class="card bg-base-200 hover:bg-base-300 transition p-6">
     <h2 class="font-semibold text-lg mb-2">LiveView Dashboard</h2>
     <p class="text-sm text-base-content/70">
       System metrics, performance monitoring, and process info.
     </p>
   </a>
 
-  <a href="/dev/mailbox" class="card bg-base-200 hover:bg-base-300 transition p-6">
+  <a :if={@dev_routes} href="/dev/mailbox" class="card bg-base-200 hover:bg-base-300 transition p-6">
     <h2 class="font-semibold text-lg mb-2">Mailbox</h2>
     <p class="text-sm text-base-content/70">
       Preview emails sent in development.
